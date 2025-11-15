@@ -1,9 +1,10 @@
 var express = require('express');
+var path = require('path');
 var router = express.Router();
 
-/* GET home page. */
+/* GET home page. Serve the static HTML instead of rendering with Pug */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.sendFile(path.join(__dirname, '..', 'views', 'index.html'));
 });
 
 module.exports = router;

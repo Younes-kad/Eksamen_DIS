@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <title>Understory – Prototype</title>
+  <link rel="stylesheet" href="/stylesheets/understory.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">
+        <span>UNDERSTORY</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#produkt">Produkt</a>
+        <a href="#business">Business</a>
+        <a href="#press">Press</a>
+        <a href="#community">Community</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="btn btn-outline">Log ind</button>
+        <button class="btn btn-primary">Bliv vært</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LYSE SEKTION (JERES HISTORIER) -->
+  <main>
+    <section class="stories-section">
+      <h1 class="section-title">Jeres historier</h1>
+
+      <div class="stories-grid">
+        <!-- Stor historie -->
+        <article class="story-card story-main">
+          <div class="story-image"></div>
+          <div class="story-content">
+            <span class="story-tag">Oplevelse</span>
+            <h2>Danmarks første surfskole for folk med handicap</h2>
+            <p>"De lærer os at leve" – en fortælling om at skabe inkluderende oplevelser.</p>
+            <button class="btn btn-secondary">Læs mere</button>
+          </div>
+        </article>
+
+        <!-- Mindre kort -->
+        <article class="story-card story-small">
+          <div class="story-image"></div>
+          <div class="story-content">
+            <span class="story-tag">Event</span>
+            <h3>Når weekenden er en rejse til verdens ende</h3>
+            <p>Korte, intense oplevelser der føles som et helt nyt liv.</p>
+          </div>
+        </article>
+
+        <article class="story-card story-small">
+          <div class="story-image"></div>
+          <div class="story-content">
+            <span class="story-tag">Community</span>
+            <h3>Eksklusive events for værter og medskabere</h3>
+            <p>Samlinger der styrker netværk, læring og storytelling.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- MIDTER-BANNER -->
+    <section class="cta-strip">
+      <div class="cta-inner">
+        <h2>For en verden med flere meningsfulde oplevelser</h2>
+        <p>Byg din oplevelse, del den, og lad andre være en del af din historie.</p>
+        <button class="btn btn-primary">Bliv en del af fællesskabet</button>
+      </div>
+    </section>
+
+    <!-- MØRK FOOTER/”SECOND HERO” -->
+    <section class="dark-section">
+      <div class="dark-inner">
+        <div class="dark-header">
+          <h2>Du skal ikke straffes for at være menneske.</h2>
+          <p>Understory samler oplevelsesmagere, der vil noget mere end endnu et event.</p>
+        </div>
+
+        <div class="dark-cards">
+          <article class="dark-card">
+            <h3>Confidence</h3>
+            <p>Hjælp dine deltagere med at opdage nye sider af sig selv.</p>
+          </article>
+          <article class="dark-card">
+            <h3>Hvor ser du dig selv om 10 år?</h3>
+            <p>Skab oplevelser der sætter spor – ikke kun i kalenderen.</p>
+          </article>
+          <article class="dark-card">
+            <h3>A taste of home</h3>
+            <p>Fra lokale køkkener til globale fortællinger – alt på én platform.</p>
+          </article>
+        </div>
+
+        <footer class="footer">
+          <div class="footer-cols">
+            <div>
+              <h4>Understory</h4>
+              <ul>
+                <li><a href="#">Om os</a></li>
+                <li><a href="#">Job</a></li>
+                <li><a href="#">Kontakt</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4>For værter</h4>
+              <ul>
+                <li><a href="#">Bliv vært</a></li>
+                <li><a href="#">Værktøjer</a></li>
+                <li><a href="#">Support</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4>Juridisk</h4>
+              <ul>
+                <li><a href="#">Betingelser</a></li>
+                <li><a href="#">Privatliv</a></li>
+                <li><a href="#">Cookies</a></li>
+              </ul>
+            </div>
+          </div>
+          <p class="footer-meta">© <span id="year"></span> Understory prototype – kun til studiebrug.</p>
+        </footer>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // bare for at sætte årstal automatisk
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
