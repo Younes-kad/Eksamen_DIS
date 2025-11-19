@@ -1,5 +1,5 @@
-const exxpress = require('express');
-const router = exxpress.Router();
+const express = require('express');
+const router = express.Router();
 const path = require('path');
 
 router.get('/signup', (req, res) => { 

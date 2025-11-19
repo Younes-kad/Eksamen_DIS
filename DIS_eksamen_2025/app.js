@@ -3,7 +3,6 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var router = require('express').Router(); // definere router her
 
 var indexRouter = require('./routes/index');
 
@@ -21,6 +20,16 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+
+// Login-side
+app.get('/login', function(req, res) {
+  res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
+
+// Signup-side
+app.get('/signup', function(req, res) {
+  res.sendFile(path.join(__dirname, 'views', 'signup.html'));
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -52,7 +61,3 @@ if (require.main === module) {
 
 
 
-// Login-side
-router.get('/login', function(req, res) {
-  res.sendFile(path.join(__dirname, '../views/login.html'));
-});
