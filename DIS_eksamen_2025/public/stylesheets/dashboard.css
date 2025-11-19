@@ -38,7 +38,7 @@ body {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: #0a341a;
+  background: #052210;
   color: #f5ffeb;
   font-weight: 800;
   font-size: 20px;
@@ -89,8 +89,7 @@ body {
 
 .nav-item.connect {
   margin-top: 6px;
-  background: #0a341a;
-  color: #f5ffeb;
+  color: #000000;
 }
 
 .nav-item.connect .icon,
@@ -149,7 +148,7 @@ body {
 }
 
 .btn-secondary {
-  background: #0a341a;
+  background: #052210;
   color: #f5ffeb;
 }
 
