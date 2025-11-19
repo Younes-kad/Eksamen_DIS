@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Understory • Meddelelser</title>
+    <link rel="stylesheet" href="/stylesheets/Chat.css" />
+  </head>
+  <body>
+    <div class="chat-app">
+      <aside class="chat-sidebar">
+        <header class="sidebar-header">
+          <div>
+            <p class="eyebrow">Understory</p>
+            <h1>Meddelelser</h1>
+          </div>
+          <button class="btn btn-pill">+ Ny samtale</button>
+        </header>
+
+        <label class="search-field">
+          <span class="material-icon" aria-hidden="true">🔍</span>
+          <input type="search" placeholder="Søg i beskeder" />
+        </label>
+
+        <div class="tab-row" role="tablist">
+          <button class="tab active" role="tab" aria-selected="true">Alle</button>
+          <button class="tab" role="tab" aria-selected="false">Ikke læst</button>
+          <button class="tab" role="tab" aria-selected="false">Bookinger</button>
+        </div>
+
+        <div class="empty-list" aria-live="polite">
+          <div class="empty-icon">
+            <div class="dot dot-one"></div>
+            <div class="dot dot-two"></div>
+            <div class="dot dot-three"></div>
+          </div>
+          <h2>Ingen samtaler endnu</h2>
+          <p>
+            Når du opretter en oplevelse eller chatter med en gæst, dukker samtalen op her.
+          </p>
+          <button class="btn btn-outline">Start din første samtale</button>
+        </div>
+      </aside>
+
+      <section class="chat-panel">
+        <header class="conversation-header">
+          <div class="header-left">
+            <p class="eyebrow">Inbox</p>
+            <h2>Vælg en samtale</h2>
+          </div>
+          <div class="header-actions">
+            <button class="icon-btn" aria-label="Start video">📹</button>
+            <button class="icon-btn" aria-label="Start opkald">📞</button>
+            <button class="icon-btn" aria-label="Detaljer">⋯</button>
+          </div>
+        </header>
+
+        <div class="conversation-empty">
+          <div class="bubble-stack" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <h3>Der er stille lige nu</h3>
+          <p>
+            Din næste samtale bliver vist i dette felt. Når du svarer på en besked, følger hele
+            tråden med.
+          </p>
+          <button class="btn btn-pill">Planlæg en oplevelse</button>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
