@@ -1,0 +1,62 @@
+
+body {
+    background: #000; /* sort baggrund */
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+/* Cirklen for loginformularen */
+.circle-container {
+    width: 350px;
+    height: 350px;
+    background: #1e1e1e; /* farve inde i cirklen */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+}
+
+/* Formular */
+form {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+}
+
+input {
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+    background: #333;
+    color: white;
+}
+
+input::placeholder {
+    color: #bbb;
+}
+
+button {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #45a049;
+}
+
+h2 {
+    color: white;
+    text-align: center;
+    margin-bottom: 15px;
+}

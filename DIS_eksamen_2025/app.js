@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var router = require('express').Router(); // definere router her
 
 var indexRouter = require('./routes/index');
 
@@ -48,3 +49,10 @@ if (require.main === module) {
     console.log('Server listening on http://localhost:' + port);
   });
 }
+
+
+
+// Login-side
+router.get('/login', function(req, res) {
+  res.sendFile(path.join(__dirname, '../views/login.html'));
+});
