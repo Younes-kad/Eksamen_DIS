@@ -1,0 +1,110 @@
+/* Base layout alignment matching Understory dashboard & index */
+.auth-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+  background-color: #f5f5f5;
+  min-height: calc(100vh - 120px); /* account for header + footer */
+}
+
+/* Login card */
+.auth-card {
+  background: white;
+  padding: 40px 45px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Title */
+.auth-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 10px;
+}
+
+/* Intro text */
+.auth-intro {
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 15px;
+}
+
+/* Form spacing */
+.auth-form .form-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.auth-form input {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.auth-form input:focus {
+  border-color: #5b6ef5;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(91, 110, 245, 0.2);
+}
+
+/* Submit button */
+.auth-submit {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  background-color: #5b6ef5;
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.auth-submit:hover {
+  background-color: #4a5dde;
+}
+
+/* Error message */
+.auth-error-message {
+  color: #c62828;
+  font-size: 14px;
+  min-height: 18px;
+  margin-bottom: 10px;
+}
+
+/* Footer text */
+.auth-footer-text {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #444;
+  text-align: center;
+}
+
+.auth-link {
+  color: #5b6ef5;
+  font-weight: 500;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+/* Make sure card looks centered on phones */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 30px 25px;
+  }
+}

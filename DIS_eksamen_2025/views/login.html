@@ -7,3 +7,163 @@
   - Fokus på eksamenspensum: tydelig POST-request, klar struktur.
 -->
 
+<!DOCTYPE html>
+<html lang="da">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Understory – Login</title>
+
+  <!--
+      Denne side er en ren HTML-side, som serveren sender som HTTP-svar (response)
+      når klienten laver et GET-request til /login.
+      Siden ligger i applikationslaget i 5-lagsmodellen.
+    -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Base-styling fra projektet (farver, typografi, layout) -->
+  <link rel="stylesheet" href="/stylesheets/understory.css" />
+
+  <!-- Ekstra styling kun til login-siden -->
+  <link rel="stylesheet" href="/stylesheets/login.css" />
+</head>
+
+<body>
+  <!--
+      HEADER / TOPBAR
+      Denne del svarer til den visuelle "ramme" i andre sider (index/dashboard),
+      så brugeren oplever det som den samme webapplikation.
+    -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/" class="logo">
+        <!-- Logo/brand for Understory -->
+        <span class="logo-mark">U</span>
+        <span class="logo-text">Understory</span>
+      </a>
+      <nav class="topbar-nav">
+        <!-- På en login-side er der typisk kun få links -->
+        <a href="/" class="topbar-link">Forside</a>
+        <a href="/signup" class="topbar-link">Opret konto</a>
+      </nav>
+    </div>
+  </header>
+
+  <!--
+      MAIN CONTENT
+      Hele login-flowet er en lille "applikation" ovenpå HTTP:
+      - Browseren laver et GET-request for at hente denne HTML-side.
+      - Når brugeren trykker "Log ind", laver browseren et POST-request til /login.
+    -->
+  <main class="auth-main">
+    <section class="auth-card" aria-labelledby="login-title">
+      <h1 id="login-title" class="auth-title">Log ind som vært</h1>
+
+      <!--
+          Denne tekst forklarer kort formålet med siden:
+          Understory-værter logger ind for at kunne bruge forum/dashboard.
+        -->
+      <p class="auth-intro">
+        Log ind for at få adgang til værtsforum, samarbejder og dit dashboard.
+      </p>
+
+      <!--
+          LOGIN-FORMULAR
+          - method="POST": browseren sender en HTTP POST request til serveren.
+          - action="/login": requestet går til /login-endpointet på serveren.
+          - Formular-data sendes i HTTP-body'en (applikationslaget), som
+            derefter transporteres over TCP (transportlaget) og IP (netværkslaget).
+        -->
+      <form class="auth-form" method="POST" action="/login">
+        <!--
+            EMAIL-FELT
+            - type="email" hjælper browseren med simpel validering på klientsiden.
+            - Navnet "email" bliver til en key i HTTP-body'en (f.eks. email=...).
+          -->
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="din@email.dk" />
+        </div>
+
+        <!--
+            PASSWORD-FELT
+            - type="password" skjuler input visuelt i browseren, men
+              i HTTP-body'en sendes det stadig som rå tekst.
+            - Derfor er det vigtigt, at forbindelsen kører over HTTPS, så
+              selve TCP-forbindelsen er krypteret med TLS.
+          -->
+        <div class="form-group">
+          <label for="password">Adgangskode</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password"
+            placeholder="Din adgangskode" />
+          <!--
+              På serversiden vil vi:
+              - Slå brugeren op i vores "database" (JSON/in-memory/DB).
+              - Sammenligne det indtastede password med en hashed værdi
+                ved hjælp af bcrypt.compare.
+              Denne HTML-side udfører ingen kryptografi – den sender blot inputtet.
+            -->
+        </div>
+
+        <!--
+            FEJLBESKED-OMRÅDE
+            Serveren kan, ved fejl, sende denne side tilbage igen med en
+            fejlbesked indsat her (f.eks. via templating eller simpel string-replace).
+            Typiske statuskoder:
+            - 200 OK: siden vises normalt.
+            - 401 Unauthorized: forkert login (kan stadig gengive denne HTML,
+              men med en fejltekst).
+          -->
+        <p class="auth-error-message">
+          <!-- Serveren kan indsætte en fejlbesked her, f.eks. "Forkert email eller adgangskode". -->
+        </p>
+
+        <!--
+            SUBMIT-KNAP
+            Når brugeren klikker her, sender browseren POST-requestet til /login.
+            Serveren kan:
+            - Ved succes: oprette en session/cookie og svare med 302 Redirect
+              til f.eks. /dashboard.
+            - Ved fejl: returnere denne side igen med en fejlbesked.
+          -->
+        <button type="submit" class="btn btn-primary auth-submit">
+          Log ind
+        </button>
+      </form>
+
+      <!--
+          LINK TIL SIGNUP
+          Dette er en simpel navigation til en anden HTML-side (/signup),
+          som typisk også vil have et POST-endpoint på serveren.
+        -->
+      <p class="auth-footer-text">
+        Har du ikke en konto?
+        <a href="/signup" class="auth-link">Opret bruger</a>
+      </p>
+
+      <!--
+          SIKKERHEDSNOTE TIL EKSAMEN
+          - Denne side er "tynd klient": ingen forretningslogik, kun UI.
+          - Sikkerhed skabes primært på serversiden:
+            * Hashing (bcrypt)
+            * Session-cookies (med f.eks. HttpOnly og Secure flags)
+            * HTTPS (TLS) for at beskytte data i transit.
+          - Her kan I ved eksamen forklare,
+            hvordan HTTP + TLS + sessions arbejder sammen i jeres løsning.
+        -->
+    </section>
+  </main>
+
+  <!--
+      FOOTER
+      Simpel, genbrugelig footer der matcher resten af sitet.
+    -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p>&copy; Understory – Værtsforum og oplevelsesøkonomi</p>
+    </div>
+  </footer>
+</body>
+
+</html>
