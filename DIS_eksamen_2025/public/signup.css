@@ -1,62 +1,89 @@
-
-body {
-    background: #000; /* sort baggrund */
-    margin: 0;
-    height: 100vh;
+/* Base layout alignment matching Understory global styling */
+.auth-main {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: Arial, sans-serif;
-}
-
-/* Cirklen for loginformularen */
-.circle-container {
-    width: 350px;
-    height: 350px;
-    background: #1e1e1e; /* farve inde i cirklen */
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
-}
-
-/* Formular */
-form {
-    width: 70%;
+    padding: 60px 20px;
+    min-height: calc(100vh - 120px); /* account for header + footer */
+  }
+  
+  /* Signup card */
+  .auth-card {
+    background: white;
+    padding: 40px 45px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 480px;
+  }
+  
+  /* Title */
+  .auth-title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  
+  /* Intro text */
+  .auth-intro {
+    margin-bottom: 25px;
+    font-size: 15px;
+  }
+  
+  /* Form fields */
+  .auth-form .form-group {
+    margin-bottom: 18px;
     display: flex;
     flex-direction: column;
-}
-
-input {
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: none;
-    background: #333;
-    color: white;
-}
-
-input::placeholder {
-    color: #bbb;
-}
-
-button {
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    background: #4CAF50;
-    color: white;
+  }
+  
+  .auth-form label {
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  
+  .auth-form input {
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
     font-size: 16px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #45a049;
-}
-
-h2 {
-    color: white;
+  }
+  
+  .auth-form input:focus {
+    border-color: #5b6ef5;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(91, 110, 245, 0.2);
+  }
+  
+  /* Submit button – reuse global .btn / .btn-primary */
+  .auth-submit {
+    width: 100%;
+    margin-top: 10px;
+  }
+  
+  /* Error message */
+  .auth-error-message {
+    color: #c62828;
+    font-size: 14px;
+    min-height: 18px;
+    margin-bottom: 10px;
+  }
+  
+  /* Footer text */
+  .auth-footer-text {
+    margin-top: 20px;
+    font-size: 14px;
     text-align: center;
-    margin-bottom: 15px;
-}
+  }
+  
+  .auth-link {
+    font-weight: 500;
+  }
+  
+  /* Mobile tweaks */
+  @media (max-width: 480px) {
+    .auth-card {
+      padding: 30px 25px;
+    }
+  }
+  

@@ -1,0 +1,169 @@
+<!--
+  Signup-side for Understory værter.
+  - Bruges til at oprette en ny vært-konto.
+  - HTTP: GET /signup henter denne side (response med HTML).
+  - HTTP: POST /signup sender formular-data til serveren i request-body'en.
+-->
+
+<!DOCTYPE html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Understory – Opret bruger</title>
+
+    <!--
+      Siden ligger i applikationslaget i 5-lagsmodellen.
+      Browseren modtager HTML som payload i et HTTP-response og gengiver det.
+    -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Basis-styling og layout (samme som forsiden/dashboard) -->
+    <link rel="stylesheet" href="/stylesheets/understory.css" />
+
+    <!-- Ekstra styling kun til signup-siden (laver vi bagefter i signup.css) -->
+    <link rel="stylesheet" href="/stylesheets/signup.css" />
+  </head>
+
+  <body>
+    <!-- HEADER / TOPBAR – kopieret fra forsiden/login, så look & feel er ens -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="/" class="logo">
+          <span class="logo-mark">U</span>
+          <span class="logo-text">Understory</span>
+        </a>
+        <nav class="topbar-nav">
+          <a href="/" class="topbar-link">Forside</a>
+          <a href="/login" class="topbar-link">Log ind</a>
+        </nav>
+      </div>
+    </header>
+
+    <!--
+      MAIN: Signup-card midt på siden.
+      Flow:
+      1) Klient laver GET /signup → denne HTML-side sendes.
+      2) Bruger udfylder formular.
+      3) Klik på "Opret konto" → browser laver POST /signup med form-data.
+    -->
+    <main class="auth-main">
+      <section class="auth-card" aria-labelledby="signup-title">
+        <h1 id="signup-title" class="auth-title">Opret vært-konto</h1>
+
+        <p class="auth-intro">
+          Opret en konto for at få adgang til værtsforum, samarbejder og dit
+          Understory-dashboard.
+        </p>
+
+        <!--
+          SIGNUP-FORMULAR
+          - method="POST": data sendes i HTTP-body'en (form-encoded eller JSON).
+          - action="/signup": backend endpoint der opretter brugeren.
+          Serveren vil typisk:
+            * Validere input.
+            * Hash'e password med bcrypt.
+            * Gemme brugeren i database/JSON.
+        -->
+        <form class="auth-form" method="POST" action="/signup">
+          <!-- Navn på vært / profil -->
+          <div class="form-group">
+            <label for="name">Navn</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              required
+              autocomplete="name"
+              placeholder="Dit navn eller værtsnavn"
+            />
+          </div>
+
+          <!-- Email bruges som login-identitet -->
+          <div class="form-group">
+            <label for="email">E-mail</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              autocomplete="email"
+              placeholder="din@email.dk"
+            />
+          </div>
+
+          <!-- Password (klartekst i HTML, men skal hashes på serveren) -->
+          <div class="form-group">
+            <label for="password">Adgangskode</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              autocomplete="new-password"
+              placeholder="Vælg en adgangskode"
+            />
+          </div>
+
+          <!-- Gentag password for simpel validering -->
+          <div class="form-group">
+            <label for="confirmPassword">Gentag adgangskode</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              required
+              autocomplete="new-password"
+              placeholder="Gentag adgangskoden"
+            />
+            <!--
+              På serversiden kan vi:
+              - Tjekke at password === confirmPassword.
+              - Afvise request med passende HTTP-statuskode (400 Bad Request)
+                hvis det ikke stemmer.
+            -->
+          </div>
+
+          <!-- Område til server-genererede fejlbeskeder -->
+          <p class="auth-error-message">
+            <!-- Her kan serveren indsætte fx: "Email er allerede i brug" -->
+          </p>
+
+          <!--
+            Submit-knappen sender POST /signup.
+            Ved succes kan backend:
+              - Oprette brugeren.
+              - Hash'e password.
+              - Oprette session/cookie.
+              - Sende 302 Redirect til /dashboard.
+          -->
+          <button type="submit" class="btn btn-primary auth-submit">
+            Opret konto
+          </button>
+        </form>
+
+        <!-- Link til login for eksisterende brugere -->
+        <p class="auth-footer-text">
+          Har du allerede en konto?
+          <a href="/login" class="auth-link">Log ind</a>
+        </p>
+
+        <!--
+          SIKKERHED (til eksamenssnak):
+          - HTML'en her er ikke sikkerhed i sig selv.
+          - Beskyttelse sker via:
+            * HTTPS (TLS) → krypterer trafikken, så password ikke er i klartekst på nettet.
+            * Hashing (bcrypt) på serversiden.
+            * Korrekt håndtering af session-cookies (HttpOnly, Secure, SameSite).
+        -->
+      </section>
+    </main>
+
+    <!-- Footer (samme stil som forsiden) -->
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <p>&copy; Understory – Værtsforum og oplevelsesøkonomi</p>
+      </div>
+    </footer>
+  </body>
+</html>
