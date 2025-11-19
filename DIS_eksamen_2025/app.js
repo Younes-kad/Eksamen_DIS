@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
+var signupRouter = require('./routes/signup');
 
 var app = express();
 
@@ -20,15 +21,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+app.use('/', signupRouter);
 
 // Login-side
 app.get('/login', function(req, res) {
   res.sendFile(path.join(__dirname, 'views', 'login.html'));
-});
-
-// Signup-side
-app.get('/signup', function(req, res) {
-  res.sendFile(path.join(__dirname, 'views', 'signup.html'));
 });
 
 // catch 404 and forward to error handler
@@ -58,6 +55,3 @@ if (require.main === module) {
     console.log('Server listening on http://localhost:' + port);
   });
 }
-
-
-
