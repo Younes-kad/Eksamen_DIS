@@ -10,7 +10,7 @@ var signupRouter = require('./routes/signup');
 
 var app = express();
 
-// Views-mappe (vi bruger almindelig HTML-filer i /views)
+// Views-mappe
 app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
@@ -44,10 +44,11 @@ app.use(function (err, req, res, next) {
 
 // START SERVER
 const PORT = process.env.PORT || 3001;
-const HOST = "0.0.0.0"; // vigtigt for at den virker udefra på dropletten
+const HOST = "0.0.0.0"; // vigtigt for at den virker udefra
 
 app.listen(PORT, HOST, () => {
   console.log(`Server running on http://${HOST}:${PORT}`);
+  console.log("http://207.154.203.120");
 });
 
 module.exports = app;
