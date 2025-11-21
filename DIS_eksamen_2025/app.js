@@ -3,10 +3,10 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var app = express();
 
 var indexRouter = require('./routes/index');
 var loginRouter = require('./routes/login');
+var signupRouter = require('./routes/signup');
 
 var app = express();
 
@@ -22,6 +22,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/', loginRouter);
+app.use('/', signupRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -45,9 +46,16 @@ module.exports = app;
 // If this file is run directly, start the server (so `node app.js` works)
 if (require.main === module) {
   var port = process.env.PORT || 3001;
+  // bind host can be overridden by env var HOST (e.g. HOST=0.0.0.0)
+  var host = process.env.HOST || '0.0.0.0';
   app.set('port', port);
-  app.listen(port, function() {
-    console.log('Server listening on http://localhost:' + port);
+  app.listen(port, host, function() {
+    console.log('Server listening on port ' + port + ' (bound to ' + host + ')');
+    if (process.env.PUBLIC_HOST) {
+      console.log('Public URL: http://' + process.env.PUBLIC_HOST + ':' + port);
+    } else {
+      console.log('If you are on a remote host, open http://<HOST_IP>:' + port);
+    }
   });
 }
 
