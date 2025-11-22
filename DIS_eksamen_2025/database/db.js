@@ -74,6 +74,56 @@ module.exports = class Db {
         return res.recordset[0].host_id;
       }
 
+    async findHostByEmail(email) {
+      await this.connect();
+      
+      const res = await this.db.request()
+        .input('email', sql.NVarChar(100), email)
+        .query(`
+          SELECT *
+          FROM hosts
+          WHERE email = @email;
+        `);
+      
+      return res.recordset[0] || null;
+      }
+
+    async updateHostById(id, {
+      firstname,
+      lastname,
+      email,
+      phone,
+      city,
+      bio
+    }) {
+      await this.connect();
+
+      const res = await this.db.request()
+        .input('id', sql.Int, id)
+        .input('firstname', sql.NVarChar(50), firstname)
+        .input('lastname', sql.NVarChar(50), lastname)
+        .input('email', sql.NVarChar(100), email)
+        .input('phone', sql.NVarChar(20), phone)
+        .input('city', sql.NVarChar(100), city)
+        .input('bio', sql.NVarChar(sql.MAX), bio)
+        .query(`
+          UPDATE hosts
+          SET
+            firstname = @firstname,
+            lastname = @lastname,
+            email = @email,
+            phone = @phone,
+            city = @city,
+            bio = @bio
+          WHERE id = @id;
+
+          SELECT id AS host_id, firstname, lastname, email, phone, city, bio
+          FROM hosts
+          WHERE id = @id;
+        `);
+
+      return res.recordset[0] || null;
+    }
 
 }
 
