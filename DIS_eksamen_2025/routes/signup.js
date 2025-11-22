@@ -47,7 +47,7 @@ router.post('/signup', async (req, res) => {
     });
 
     console.log("Ny host oprettet:", newHostId);
-    res.redirect('/login');
+    res.redirect('/login-2fa?signup=1');
 
   } catch (err) {
     console.error("Signup error:", err);

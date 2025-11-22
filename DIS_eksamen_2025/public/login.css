@@ -1,61 +1,89 @@
+:root {
+  --bg: #f5f7f8;
+  --card: #ffffff;
+  --text: #111518;
+  --muted: #56625b;
+  --accent: #052210;
+  --accent-soft: #f1f3f5;
+  --border: #e4e7eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-    background: #000; /* sort baggrund */
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 20% 20%, rgba(5,34,16,0.08), transparent 38%), radial-gradient(circle at 80% 0%, rgba(5,34,16,0.06), transparent 42%), var(--bg);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  padding: 24px;
 }
 
-/* Cirklen for loginformularen */
 .circle-container {
-    width: 350px;
-    height: 350px;
-    background: #1e1e1e; /* farve inde i cirklen */
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border);
 }
 
-/* Formular */
 form {
-    width: 70%;
-    display: flex;
-    flex-direction: column;
-}
-
-input {
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: none;
-    background: #333;
-    color: white;
-}
-
-input::placeholder {
-    color: #bbb;
-}
-
-button {
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    background: #4CAF50;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #45a049;
+  display: grid;
+  gap: 14px;
 }
 
 h2 {
-    color: white;
-    text-align: center;
-    margin-bottom: 15px;
+  margin: 0 0 4px;
+  font-size: 22px;
+  text-align: center;
+  color: var(--accent);
+}
+
+.subtext {
+  margin: 0 0 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 15px;
+}
+
+input:focus {
+  outline: none;
+  border-color: rgba(5, 34, 16, 0.18);
+  box-shadow: 0 6px 18px rgba(5, 34, 16, 0.08);
+}
+
+button {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent);
+  color: #f5ffeb;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+  box-shadow: 0 10px 20px rgba(5, 34, 16, 0.12);
+}
+
+button:active {
+  transform: translateY(1px);
 }

@@ -46,7 +46,7 @@
             </div>
             <div class="form-row">
               <label>Telefon</label>
-              <input type="text" name="phone" />
+              <input type="text" name="phone" value="+45" pattern="\+45\d{8}" oninput="if(!this.value.startsWith('\+45')) this.value='+45' + this.value.replace(/[^\d]/g,'').replace(/^45/,'');" />
             </div>
             <div class="form-row">
               <label>By</label>
@@ -91,7 +91,7 @@
       form.firstname.value = data.firstname || '';
       form.lastname.value = data.lastname || '';
       form.email.value = data.email || '';
-      form.phone.value = data.phone || '';
+      form.phone.value = data.phone || '+45';
       form.city.value = data.city || '';
       form.bio.value = data.bio || '';
 
@@ -99,11 +99,14 @@
         e.preventDefault();
         setStatus('Gemmer...', false);
 
+        const phoneRaw = (form.phone.value || '').replace(/\\s+/g, '');
+        const phone = phoneRaw.startsWith('+45') ? phoneRaw : `+45${phoneRaw.replace(/^\\+?45/, '')}`;
+
         const body = {
           firstname: form.firstname.value.trim(),
           lastname: form.lastname.value.trim(),
           email: form.email.value.trim(),
-          phone: form.phone.value.trim(),
+          phone,
           city: form.city.value.trim(),
           bio: form.bio.value.trim()
         };
