@@ -121,7 +121,14 @@
 
           <div class="form-group">
             <label for="phone">Telefonnummer</label>
-            <input type="text" id="phone" name="phone" required placeholder="+45 12 34 56 78" />
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              required
+              inputmode="tel"
+              placeholder="+45 12 34 56 78"
+            />
           </div>
 
           <div class="form-group">
@@ -219,10 +226,32 @@
       // Password validation rules
       const passwordInput = document.getElementById('password');
       const confirmInput = document.getElementById('confirmPassword');
+      const countryCodeSelect = document.getElementById('countryCode');
+      const phoneInput = document.getElementById('phoneNumber');
+      const phoneHidden = document.getElementById('phone');
       const form = document.querySelector('.auth-form');
       const errorBox = document.querySelector('.auth-error-message');
 
       form.addEventListener('submit', function (e) {
+        const countryCode = (countryCodeSelect.value || '').trim();
+        const phoneDigits = (phoneInput.value || '').replace(/\\D/g, '');
+        const countryDigits = countryCode.replace(/\\D/g, '');
+        const combinedDigits = countryDigits + phoneDigits;
+
+        if (!countryCode) {
+          e.preventDefault();
+          errorBox.textContent = "V\u00e6lg en landekode for dit telefonnummer.";
+          return;
+        }
+
+        if (combinedDigits.length < 10) {
+          e.preventDefault();
+          errorBox.textContent = "Telefonnummer skal inkludere landekode og have mindst 10 cifre (fx +4512345678).";
+          return;
+        }
+
+        phoneHidden.value = `+${combinedDigits}`;
+
         const password = passwordInput.value;
         const confirm = confirmInput.value;
 
