@@ -3,10 +3,6 @@ const router = express.Router();
 const path = require('path');
 const bcrypt = require('bcrypt');
 
-function generateCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
 router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../views/login.html'));
 });
@@ -36,71 +32,18 @@ router.post('/login', async (req, res) => {
 
     const hostId = host.host_id || host.id;
 
-    const twilioClient = req.app.get('twilioClient');
-    const twilioNumber = req.app.get('twilioNumber');
-    const toPhone = host.phone;
-
-    if (!twilioClient || !twilioNumber) {
-      return res.status(500).send("2FA er ikke konfigureret.");
-    }
-
-    if (!toPhone) {
-      return res.status(400).send("Ingen telefonnummer tilknyttet. Tilføj venligst et nummer på din profil.");
-    }
-
-    const code = generateCode();
-    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 min
-
-    req.session.pending2FA = {
-      code,
-      expiresAt,
-      host: {
-        id: hostId,
-        firstname: host.firstname,
-        lastname: host.lastname,
-        email: host.email,
-        phone: host.phone
-      }
+    req.session.host = {
+      id: hostId,
+      firstname: host.firstname,
+      lastname: host.lastname,
+      email: host.email
     };
 
-    await twilioClient.messages.create({
-      from: twilioNumber,
-      to: toPhone,
-      body: `Din login-kode er: ${code} (gyldig i 5 min)`
-    });
-
-    res.redirect('/login-2fa');
+    res.redirect('/dashboard');
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).send("Der skete en fejl under login.");
   }
-});
-
-router.get('/login-2fa', (req, res) => {
-  res.sendFile(path.join(__dirname, '../views/login-2fa.html'));
-});
-
-router.post('/login-2fa', (req, res) => {
-  const { code } = req.body;
-  const pending = req.session.pending2FA;
-
-  if (!pending) {
-    return res.status(400).send('Ingen aktiv 2FA session. Log ind igen.');
-  }
-
-  if (Date.now() > pending.expiresAt) {
-    req.session.pending2FA = null;
-    return res.status(400).send('Koden er udløbet. Log ind igen.');
-  }
-
-  if (code !== pending.code) {
-    return res.status(401).send('Forkert kode');
-  }
-
-  req.session.host = pending.host;
-  req.session.pending2FA = null;
-
-  res.redirect('/dashboard');
 });
 
 module.exports = router;
