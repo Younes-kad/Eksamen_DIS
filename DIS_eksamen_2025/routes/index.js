@@ -12,6 +12,10 @@ router.get('/dashboard', requireLogin, function(req, res) {
   res.sendFile(path.join(__dirname, '..', 'views', 'dashboard.html'));
 });
 
+router.get('/kalender', requireLogin, function(req, res) {
+  res.sendFile(path.join(__dirname, '..', 'views', 'kalender.html'));
+});
+
 router.get('/api/me', requireLogin, async function(req, res) {
   try {
     const db = req.app.get('db');
