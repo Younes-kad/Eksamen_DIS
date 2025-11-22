@@ -9,6 +9,10 @@ var loginRouter = require('./routes/login');
 var signupRouter = require('./routes/signup');
 
 var app = express();
+const Db = require('./database/db.js');
+const dbConfig = require('./database/config.js');
+const db = new Db(dbConfig);
+app.set('db', db);
 
 // Views-mappe
 app.set('views', path.join(__dirname, 'views'));
@@ -16,7 +20,7 @@ app.set('views', path.join(__dirname, 'views'));
 // Middleware
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -49,6 +53,9 @@ const HOST = "0.0.0.0"; // vigtigt for at den virker udefra
 app.listen(PORT, HOST, () => {
   console.log(`Server running on http://${HOST}:${PORT}`);
   console.log("http://207.154.203.120");
+  console.log("http://localhost:3001");
 });
+
+
 
 module.exports = app;

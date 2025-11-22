@@ -65,15 +65,13 @@
         <form class="auth-form" method="POST" action="/signup">
           <!-- Navn på vært / profil -->
           <div class="form-group">
-            <label for="name">Navn</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              required
-              autocomplete="name"
-              placeholder="Dit navn eller værtsnavn"
-            />
+            <label for="firstname">Fornavn</label>
+            <input type="text" id="firstname" name="firstname" required autocomplete="given-name" placeholder="Dit fornavn" />
+          </div>
+
+          <div class="form-group">
+            <label for="lastname">Efternavn</label>
+            <input type="text" id="lastname" name="lastname" required autocomplete="family-name" placeholder="Dit efternavn" />
           </div>
 
           <!-- Email bruges som login-identitet -->
@@ -121,6 +119,47 @@
             -->
           </div>
 
+          <div class="form-group">
+            <label for="phone">Telefonnummer</label>
+            <input type="text" id="phone" name="phone" required placeholder="+45 12 34 56 78" />
+          </div>
+
+          <div class="form-group">
+            <label for="birthdate">Fødselsdato</label>
+            <input type="date" id="birthdate" name="birthdate" required />
+          </div>
+
+          <div class="form-group">
+            <label for="city">By</label>
+            <input type="text" id="city" name="city" required placeholder="København" />
+          </div>
+
+          <div class="form-group">
+            <label for="bio">Biografi</label>
+            <textarea id="bio" name="bio" rows="3" placeholder="Fortæl lidt om dig selv"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="is_company">Er du en virksomhed?</label>
+            <select id="is_company" name="is_company" required>
+              <option value="0">Nej</option>
+              <option value="1">Ja</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="cvr-group" style="display:none;">
+            <label for="cvr">CVR-nummer (kun hvis virksomhed)</label>
+            <input type="text" id="cvr" name="cvr" placeholder="12345678" />
+          </div>
+
+          <div class="form-group">
+            <label for="open_for_collab">Er du åben for samarbejde?</label>
+            <select id="open_for_collab" name="open_for_collab" required>
+              <option value="1">Ja</option>
+              <option value="0">Nej</option>
+            </select>
+          </div>
+
           <!-- Område til server-genererede fejlbeskeder -->
           <p class="auth-error-message">
             <!-- Her kan serveren indsætte fx: "Email er allerede i brug" -->
@@ -162,5 +201,47 @@
         <p>&copy; Understory – Værtsforum og oplevelsesøkonomi</p>
       </div>
     </footer>
+    <script>
+      // Show/hide CVR based on company selection
+      const companySelect = document.getElementById('is_company');
+      const cvrGroup = document.getElementById('cvr-group');
+
+      companySelect.addEventListener('change', function () {
+        if (this.value === '1') {
+          cvrGroup.style.display = 'block';
+          document.getElementById('cvr').required = true;
+        } else {
+          cvrGroup.style.display = 'none';
+          document.getElementById('cvr').required = false;
+        }
+      });
+
+      // Password validation rules
+      const passwordInput = document.getElementById('password');
+      const confirmInput = document.getElementById('confirmPassword');
+      const form = document.querySelector('.auth-form');
+      const errorBox = document.querySelector('.auth-error-message');
+
+      form.addEventListener('submit', function (e) {
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
+        const hasMinLength = password.length >= 8;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasNumber = /\d/.test(password);
+
+        if (!hasMinLength || !hasUppercase || !hasNumber) {
+          e.preventDefault();
+          errorBox.textContent = "Adgangskoden skal være mindst 8 tegn og indeholde 1 stort bogstav og 1 tal.";
+          return;
+        }
+
+        if (password !== confirm) {
+          e.preventDefault();
+          errorBox.textContent = "Adgangskoderne skal være ens.";
+          return;
+        }
+      });
+    </script>
   </body>
 </html>
