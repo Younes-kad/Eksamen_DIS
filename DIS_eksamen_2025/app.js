@@ -3,6 +3,9 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+require('dotenv').config();
+var session = require('express-session');
+var twilio = require('twilio');
 
 var indexRouter = require('./routes/index');
 var loginRouter = require('./routes/login');
@@ -15,18 +18,15 @@ const dbConfig = require('./database/config.js');
 const db = new Db(dbConfig);
 app.set('db', db);
 
-const session = require('express-session');
+// --- Twilio setup (2FA) ------------------------------------ //
+const twilioClient = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
-app.use(session({
-  secret: "superSecretKode2025",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 1000 * 60 * 60 * 2 // 2 timer
-  }
-}));
+app.set('twilioClient', twilioClient);
+app.set('twilioNumber', process.env.TWILIO_PHONE_NUMBER);
+// ----------------------------------------------------------- //
 
 // Views-mappe
 app.set('views', path.join(__dirname, 'views'));
@@ -36,6 +36,22 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// --- Session middleware (bruges til at gemme 2FA-kode) ----- //
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'en-meget-hemmelig-nøgle',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 30 // 30 min session
+    }
+  })
+);
+// ----------------------------------------------------------- //
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 
