@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rediger profil</title>
+  <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/profile.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">U</div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="/dashboard">
+          <span class="icon">🏠</span>
+          <span>Hjem</span>
+        </a>
+        <a class="nav-item active" href="/profile">
+          <span class="icon">👤</span>
+          <span>Profil</span>
+        </a>
+        <a class="nav-item" href="/Chat">
+          <span class="icon">🔗</span>
+          <span>Connect</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <section class="next-event">
+        <h2>Opdater dine oplysninger</h2>
+        <div class="next-event-card">
+          <form id="profile-form">
+            <div class="form-row">
+              <label>Fornavn</label>
+              <input type="text" name="firstname" required />
+            </div>
+            <div class="form-row">
+              <label>Efternavn</label>
+              <input type="text" name="lastname" required />
+            </div>
+            <div class="form-row">
+              <label>Email</label>
+              <input type="email" name="email" required />
+            </div>
+            <div class="form-row">
+              <label>Telefon</label>
+              <input type="text" name="phone" />
+            </div>
+            <div class="form-row">
+              <label>By</label>
+              <input type="text" name="city" />
+            </div>
+            <div class="form-row">
+              <label>Bio</label>
+              <textarea name="bio" rows="4" placeholder="Fortæl kort om dig selv"></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-secondary">Gem ændringer</button>
+              <span id="status" class="subtle"></span>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    async function fetchProfile() {
+      try {
+        const res = await fetch('/api/me');
+        if (!res.ok) throw new Error('Unauthorized');
+        return res.json();
+      } catch (err) {
+        window.location.href = '/login';
+        throw err;
+      }
+    }
+
+    function setStatus(text, isError = false) {
+      const el = document.getElementById('status');
+      el.textContent = text;
+      el.style.color = isError ? '#c0392b' : '#2e7d32';
+    }
+
+    async function initForm() {
+      const form = document.getElementById('profile-form');
+      const data = await fetchProfile();
+
+      form.firstname.value = data.firstname || '';
+      form.lastname.value = data.lastname || '';
+      form.email.value = data.email || '';
+      form.phone.value = data.phone || '';
+      form.city.value = data.city || '';
+      form.bio.value = data.bio || '';
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setStatus('Gemmer...', false);
+
+        const body = {
+          firstname: form.firstname.value.trim(),
+          lastname: form.lastname.value.trim(),
+          email: form.email.value.trim(),
+          phone: form.phone.value.trim(),
+          city: form.city.value.trim(),
+          bio: form.bio.value.trim()
+        };
+
+        try {
+          const res = await fetch('/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text || 'Kunne ikke gemme');
+          }
+
+          const updated = await res.json();
+          setStatus('Profil opdateret!');
+          form.email.value = updated.email || form.email.value;
+        } catch (err) {
+          console.error(err);
+          setStatus(err.message || 'Der skete en fejl', true);
+        }
+      });
+    }
+
+    initForm();
+  </script>
+</body>
+</html>

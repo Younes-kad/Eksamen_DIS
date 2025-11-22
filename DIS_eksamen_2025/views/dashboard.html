@@ -44,6 +44,23 @@
     </aside>
 
     <main class="content">
+      <section class="profile">
+        <div class="next-event-card profile-card">
+          <div>
+            <p class="muted">Velkommen tilbage</p>
+            <h2 id="host-name">Indlæser...</h2>
+            <p id="host-email" class="subtle"></p>
+            <p id="host-city" class="subtle"></p>
+            <p id="host-bio" class="subtle"></p>
+          </div>
+          <div class="profile-actions">
+            <h3>Din status</h3>
+            <p>Hold dine profiloplysninger opdaterede.</p>
+            <a class="btn btn-secondary profile-btn" href="/profile">Rediger profil</a>
+          </div>
+        </div>
+      </section>
+
       <section class="next-event">
         <h2>Dit næste event</h2>
         <div class="next-event-card">
@@ -71,5 +88,24 @@
       </section>
     </main>
   </div>
+  <script>
+    (async function loadHost() {
+      try {
+        const res = await fetch('/api/me');
+        if (!res.ok) throw new Error('Unauthorized');
+
+        const host = await res.json();
+        const fullName = [host.firstname, host.lastname].filter(Boolean).join(' ') || 'Vært';
+
+        document.getElementById('host-name').textContent = fullName;
+        document.getElementById('host-email').textContent = host.email || '';
+        document.getElementById('host-city').textContent = host.city ? `By: ${host.city}` : '';
+        document.getElementById('host-bio').textContent = host.bio ? `Bio: ${host.bio}` : 'Tilføj en kort bio til din profil.';
+      } catch (err) {
+        console.error('Kunne ikke hente brugerdata', err);
+        window.location.href = '/login';
+      }
+    })();
+  </script>
 </body>
 </html>
