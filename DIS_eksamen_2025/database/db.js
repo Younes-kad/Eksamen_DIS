@@ -88,6 +88,19 @@ module.exports = class Db {
       return res.recordset[0] || null;
       }
 
+    async setHostAuthenticated(id, authenticated) {
+      await this.connect();
+
+      await this.db.request()
+        .input('id', sql.Int, id)
+        .input('authenticated', sql.Bit, authenticated)
+        .query(`
+          UPDATE hosts
+          SET authenticated = @authenticated
+          WHERE id = @id;
+        `);
+    }
+
     async updateHostById(id, {
       firstname,
       lastname,

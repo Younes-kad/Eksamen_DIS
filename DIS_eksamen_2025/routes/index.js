@@ -51,4 +51,10 @@ router.get('/Chat', function(req, res) {
   res.redirect(301, '/chat');
 });
 
+router.get('/logout', function(req, res) {
+  req.session.destroy(() => {});
+  res.clearCookie('connect.sid');
+  res.redirect('/');
+});
+
 module.exports = router;

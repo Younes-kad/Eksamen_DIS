@@ -36,6 +36,17 @@ router.post('/login', async (req, res) => {
 
     const hostId = host.host_id || host.id;
 
+    // Hvis brugeren allerede er 2FA-verificeret, log ind direkte
+    if (host.authenticated) {
+      req.session.host = {
+        id: hostId,
+        firstname: host.firstname,
+        lastname: host.lastname,
+        email: host.email
+      };
+      return res.redirect('/dashboard');
+    }
+
     const twilioClient = req.app.get('twilioClient');
     const twilioNumber = req.app.get('twilioNumber');
     const toPhone = host.phone;
@@ -80,7 +91,7 @@ router.get('/login-2fa', (req, res) => {
   res.sendFile(path.join(__dirname, '../views/login-2fa.html'));
 });
 
-router.post('/login-2fa', (req, res) => {
+router.post('/login-2fa', async (req, res) => {
   const { code } = req.body;
   const pending = req.session.pending2FA;
 
@@ -97,10 +108,18 @@ router.post('/login-2fa', (req, res) => {
     return res.status(401).send('Forkert kode');
   }
 
-  req.session.host = pending.host;
-  req.session.pending2FA = null;
+  try {
+    const db = req.app.get('db');
+    await db.setHostAuthenticated(pending.host.id, true);
 
-  res.redirect('/dashboard');
+    req.session.host = pending.host;
+    req.session.pending2FA = null;
+
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error("2FA confirm error:", err);
+    res.status(500).send('Kunne ikke bekræfte 2FA. Prøv igen.');
+  }
 });
 
 module.exports = router;

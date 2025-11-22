@@ -97,6 +97,19 @@ body {
   color: #f5ffeb;
 }
 
+.sidebar-footer {
+  margin-top: auto;
+}
+
+.nav-item.logout {
+  background: #f8f0f0;
+  border: 1px solid var(--border);
+}
+
+.nav-item.logout:hover {
+  background: #f3e8e8;
+}
+
 .content {
   padding: 32px 40px;
   display: grid;
