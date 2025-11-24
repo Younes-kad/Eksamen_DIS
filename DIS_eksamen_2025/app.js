@@ -11,6 +11,7 @@ var indexRouter = require('./routes/index');
 var loginRouter = require('./routes/login');
 var signupRouter = require('./routes/signup');
 var profileRouter = require('./routes/profile');
+var dashboardRouter = require('./routes/dashboard');
 
 var app = express();
 const Db = require('./database/db.js');
@@ -56,6 +57,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // Routes
+// register dashboard router (contains /dashboard, /kalender, /chat, /api/me, /logout)
+app.use('/', dashboardRouter);
 app.use('/', indexRouter);
 app.use('/', loginRouter);
 app.use('/', signupRouter);
