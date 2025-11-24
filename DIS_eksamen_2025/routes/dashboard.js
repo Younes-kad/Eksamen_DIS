@@ -59,7 +59,3 @@ router.get('/logout', (req, res) => {
 });
 
 module.exports = router;
-const path = require('path');
-router.get('/kalender', (req, res) => {
-  res.sendFile(path.join(__dirname, '../views/Dashboard/nav/kalender.html'));
-});
