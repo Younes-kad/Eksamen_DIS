@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="da">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Understory – Salg</title>
+    <link rel="stylesheet" href="/dashboard.css" />
+    <link rel="stylesheet" href="/salg.css" />
+</head>
+
+<body>
+    <div class="app-shell">
+
+        <aside class="sidebar">
+            <div class="brand">U</div>
+            <nav class="sidebar-nav">
+                <a class="nav-item" href="/dashboard">
+                    <span class="icon">🏠</span>
+                    <span>Hjem</span>
+                </a>
+                <a class="nav-item" href="/kalender">
+                    <span class="icon">📅</span>
+                    <span>Kalender</span>
+                </a>
+                <a class="nav-item" href="/Chat">
+                    <span class="icon">🎟️</span>
+                    <span>Oplevelser</span>
+                </a>
+                <a class="nav-item active" href="/salg">
+                    <span class="icon">💳</span>
+                    <span>Salg</span>
+                </a>
+                <a class="nav-item" href="#">
+                    <span class="icon">🛍️</span>
+                    <span>Storefront</span>
+                    <span class="chevron">›</span>
+                </a>
+                <a class="nav-item" href="#">
+                    <span class="icon">🌿</span>
+                    <span>Grow</span>
+                </a>
+                <a class="nav-item connect" href="/Chat">
+                    <span class="icon">🔗</span>
+                    <span>Connect</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a class="nav-item logout" href="/logout">
+                    <span class="icon">🚪</span>
+                    <span>Log ud</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="content">
+
+            <div class="sales-header">
+                <h1>Salg</h1>
+                <div class="tabs">
+                    <button class="tab-link active">Bookinger</button>
+                    <button class="tab-link">Gavekort</button>
+                </div>
+            </div>
+
+            <section class="sales-card">
+                <div class="empty-state">
+                    <div class="icon-container">
+                        <span class="ticket-icon">🎫</span>
+                        <div class="check-badge">✓</div>
+                    </div>
+                    <h2>Ingen bookinger endnu</h2>
+                    <p>Del oplevelsen med omverdenen for at få dine første bookinger på plads</p>
+                    <button class="btn btn-outline">Administrer</button>
+                </div>
+            </section>
+
+            <section class="promo-banner">
+                <div class="banner-content">
+                    <h3>Skræddersy din perfekte gæsteoplevelse.</h3>
+                    <p>Automatiser påmindelser, administrer aflysninger og meget mere.</p>
+                    <button class="btn btn-light">Åbn indstillinger</button>
+                </div>
+
+                <div class="banner-image">
+                    <div class="img-placeholder">👥</div>
+                </div>
+
+                <button class="close-banner" aria-label="Luk">×</button>
+            </section>
+
+        </main>
+    </div>
+</body>
+
+</html>
