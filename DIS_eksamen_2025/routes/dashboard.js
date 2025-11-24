@@ -23,6 +23,11 @@ router.get('/salg', requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'salg.html'));
 });
 
+// GET /storefront (protected)
+router.get('/storefront', requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'views', 'Storefront.html'));
+});
+
 // redirect legacy /Chat -> /chat
 router.get('/Chat', (req, res) => {
   res.redirect(301, '/chat');
