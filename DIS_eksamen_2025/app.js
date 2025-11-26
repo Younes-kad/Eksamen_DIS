@@ -1,4 +1,5 @@
 var createError = require('http-errors');
+const requireLogin = require('./middleware/requireLogin'); // importere middleware
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -19,17 +20,15 @@ const dbConfig = require('./database/config.js');
 const db = new Db(dbConfig);
 app.set('db', db);
 
-// --- Twilio setup (2FA) ------------------------------------ //
+// Twillo opsætning 2fa
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
 );
 
+
 app.set('twilioClient', twilioClient);
 app.set('twilioNumber', process.env.TWILIO_PHONE_NUMBER);
-// ----------------------------------------------------------- //
-
-// Views-mappe
 app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
@@ -51,18 +50,34 @@ app.use(
     }
   })
 );
-// ----------------------------------------------------------- //
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// de her er alle offentlige endpoints, som ikke kræver login dvs, ikke beskyttes af requireLogin middleware
+const publicPaths = [
+  '/',
+  '/login',
+  '/login-2fa',
+  '/signup',
+  '/chat'
+];
 
-// Routes
-// register dashboard router (contains /dashboard, /kalender, /chat, /api/me, /logout)
+app.use((req, res, next) => {
+  if (publicPaths.includes(req.path)) {
+    return next(); // Offentlige sider, gives adgang uden login
+  }
+
+  return requireLogin(req, res, next); // alt andet kræver login
+});
+
+
+// register alle routere (indeholder /dashboard, /kalender, /chat, /api/me, /logout)
 app.use('/', dashboardRouter);
 app.use('/', indexRouter);
 app.use('/', loginRouter);
 app.use('/', signupRouter);
 app.use('/', profileRouter);
+
 
 // 404 handler
 app.use(function (req, res, next) {
@@ -90,7 +105,5 @@ app.listen(PORT, HOST, () => {
   console.log("http://207.154.203.120");
   console.log("http://localhost:3001");
 });
-
-
 
 module.exports = app;
