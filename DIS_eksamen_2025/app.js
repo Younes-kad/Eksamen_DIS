@@ -1,5 +1,5 @@
 var createError = require('http-errors');
-const requireLogin = require('./middleware/requireLogin'); // importere middleware
+var requireLogin = require('./middleware/requireLogin'); // importere middleware
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -7,18 +7,18 @@ var logger = require('morgan');
 require('dotenv').config();
 var session = require('express-session');
 var twilio = require('twilio');
+var app = express();
+const Db = require('./database/db.js');
+const dbConfig = require('./database/config.js');
+const db = new Db(dbConfig);
 
+// Importer routere
 var indexRouter = require('./routes/index');
 var loginRouter = require('./routes/login');
 var signupRouter = require('./routes/signup');
 var profileRouter = require('./routes/profile');
 var dashboardRouter = require('./routes/dashboard');
 
-var app = express();
-const Db = require('./database/db.js');
-const dbConfig = require('./database/config.js');
-const db = new Db(dbConfig);
-app.set('db', db);
 
 // Twillo opsætning 2fa
 const twilioClient = twilio(
@@ -26,7 +26,8 @@ const twilioClient = twilio(
   process.env.TWILIO_AUTH_TOKEN
 );
 
-
+// view engine setup
+app.set('db', db);
 app.set('twilioClient', twilioClient);
 app.set('twilioNumber', process.env.TWILIO_PHONE_NUMBER);
 app.set('views', path.join(__dirname, 'views'));
@@ -36,8 +37,10 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// --- Session middleware (bruges til at gemme 2FA-kode) ----- //
+
+// middleware session bruges til at gmme 2fa og login state
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'en-meget-hemmelig-nøgle',
@@ -51,7 +54,6 @@ app.use(
   })
 );
 
-app.use(express.static(path.join(__dirname, 'public')));
 
 // de her er alle offentlige endpoints, som ikke kræver login dvs, ikke beskyttes af requireLogin middleware
 const publicPaths = [
