@@ -60,8 +60,7 @@ const publicPaths = [
   '/',
   '/login',
   '/login-2fa',
-  '/signup',
-  '/chat'
+  '/signup'
 ];
 
 app.use((req, res, next) => {
