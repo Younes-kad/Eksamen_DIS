@@ -4,13 +4,32 @@ const requireLogin = require('../middleware/requireLogin');
 
 const router = express.Router();
 
+function normalizePem(key, { type }) {
+  if (!key) return null;
+  let cleaned = key.trim();
+  cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\\n/g, '\n');
+
+  const hasHeader = cleaned.includes('-----BEGIN');
+  if (hasHeader) {
+    return cleaned;
+  }
+
+  if (type === 'public') {
+    return `-----BEGIN PUBLIC KEY-----\n${cleaned}\n-----END PUBLIC KEY-----`;
+  }
+
+  return `-----BEGIN RSA PRIVATE KEY-----\n${cleaned}\n-----END RSA PRIVATE KEY-----`;
+}
+
 function decryptWithPrivateKey(privateKey, encryptedContent) {
   if (!privateKey || !encryptedContent) return null;
 
   try {
+    const normalized = normalizePem(privateKey, { type: 'private' });
+    const keyObj = crypto.createPrivateKey(normalized);
     const decrypted = crypto.privateDecrypt(
       {
-        key: privateKey,
+        key: keyObj,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
       },
       Buffer.from(encryptedContent, 'base64')
@@ -23,15 +42,49 @@ function decryptWithPrivateKey(privateKey, encryptedContent) {
 }
 
 function encryptWithPublicKey(publicKey, text) {
-  const encrypted = crypto.publicEncrypt(
-    {
-      key: publicKey,
-      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
-    },
-    Buffer.from(text, 'utf8')
-  );
+  const normalized = normalizePem(publicKey, { type: 'public' });
+  try {
+    const keyObj = crypto.createPublicKey(normalized);
+    const encrypted = crypto.publicEncrypt(
+      {
+        key: keyObj,
+        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
+      },
+      Buffer.from(text, 'utf8')
+    );
+    return encrypted.toString('base64');
+  } catch (err) {
+    const rsaWrapped = normalizePem(publicKey, { type: 'public' }).replace('BEGIN PUBLIC KEY', 'BEGIN RSA PUBLIC KEY').replace('END PUBLIC KEY', 'END RSA PUBLIC KEY');
+    const keyObj = crypto.createPublicKey(rsaWrapped);
+    const encrypted = crypto.publicEncrypt(
+      {
+        key: keyObj,
+        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
+      },
+      Buffer.from(text, 'utf8')
+    );
+    return encrypted.toString('base64');
+  }
+}
 
-  return encrypted.toString('base64');
+function parseDualCipher(content) {
+  if (!content) return null;
+  try {
+    const parsed = JSON.parse(content);
+    if (parsed && (parsed.to || parsed.from)) return parsed;
+  } catch (err) {
+    return null;
+  }
+  return null;
+}
+
+function decryptForHost({ content, hostPrivateKey, isSender }) {
+  const dual = parseDualCipher(content);
+  const targetCipher = dual
+    ? (isSender ? (dual.from || dual.to) : (dual.to || dual.from))
+    : content;
+
+  return decryptWithPrivateKey(hostPrivateKey, targetCipher);
 }
 
 router.get('/messages', requireLogin, async (req, res) => {
@@ -54,7 +107,13 @@ router.get('/messages', requireLogin, async (req, res) => {
       const otherLast = otherHostId === conv.host1_id ? conv.host1_lastname : conv.host2_lastname;
       const otherEmail = otherHostId === conv.host1_id ? conv.host1_email : conv.host2_email;
 
-      const lastMessagePlaintext = decryptWithPrivateKey(host.private_key, conv.last_message_content);
+      const lastMessagePlaintext = conv.last_message_id
+        ? decryptForHost({
+            content: conv.last_message_content,
+            hostPrivateKey: host.private_key,
+            isSender: conv.last_message_sender_id === hostId
+          })
+        : null;
 
       return {
         conversation_id: conv.conversation_id,
@@ -175,7 +234,11 @@ router.get('/messages/:conversationId', requireLogin, async (req, res) => {
     const messages = await db.getMessages(conversationId);
 
     const decryptedMessages = messages.map((msg) => {
-      const plaintext = decryptWithPrivateKey(host.private_key, msg.content);
+      const plaintext = decryptForHost({
+        content: msg.content,
+        hostPrivateKey: host.private_key,
+        isSender: msg.sender_id === hostId
+      });
 
       return {
         ...msg,
@@ -213,13 +276,28 @@ router.post('/messages/send', requireLogin, async (req, res) => {
 
     const recipientId = conversation.host1_id === senderId ? conversation.host2_id : conversation.host1_id;
     const recipient = await db.findHostById(recipientId);
+    const sender = await db.findHostById(senderId);
 
     if (!recipient || !recipient.public_key) {
       return res.status(400).send('Modtageren mangler en offentlig nøgle.');
     }
+    if (!sender || !sender.public_key) {
+      return res.status(400).send('Afsenderen mangler en offentlig nøgle.');
+    }
 
-    const encryptedContent = encryptWithPublicKey(recipient.public_key, text);
-    const saved = await db.createMessage(conversationId, senderId, encryptedContent);
+    let encryptedForRecipient;
+    let encryptedForSender;
+    try {
+      encryptedForRecipient = encryptWithPublicKey(recipient.public_key, text);
+      encryptedForSender = encryptWithPublicKey(sender.public_key, text);
+    } catch (err) {
+      console.error('Fejl ved kryptering:', err);
+      return res.status(400).send('Ugyldig offentlig nøgle hos afsender eller modtager.');
+    }
+
+    const storedContent = JSON.stringify({ to: encryptedForRecipient, from: encryptedForSender });
+
+    const saved = await db.createMessage(conversationId, senderId, storedContent);
 
     res.json({
       ...saved,

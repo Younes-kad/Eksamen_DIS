@@ -107,6 +107,9 @@
       .message-row.outgoing {
         justify-content: flex-end;
       }
+      .message-row.incoming {
+        justify-content: flex-start;
+      }
       .message-bubble {
         max-width: 70%;
         padding: 10px 14px;
@@ -120,6 +123,10 @@
         background: #e0ff5e;
         color: #0c1c10;
         border-color: rgba(0,0,0,0.04);
+      }
+      .message-row.incoming .message-bubble {
+        background: rgba(0, 0, 0, 0.25);
+        border-color: rgba(255,255,255,0.08);
       }
       .message-meta {
         font-size: 12px;
@@ -260,6 +267,9 @@
           const res = await fetch('/api/me', { credentials: 'include' });
           if (!res.ok) throw new Error('Kunne ikke hente bruger');
           state.me = await res.json();
+          if (state.me && state.me.id) {
+            state.me.id = Number(state.me.id);
+          }
         }
 
         function formatTime(dateStr) {
@@ -289,7 +299,7 @@
 
             const snippet = document.createElement('div');
             snippet.className = 'snippet';
-            snippet.textContent = conv.last_message?.plaintext || 'Ingen beskeder endnu';
+            snippet.textContent = conv.last_message?.plaintext || (conv.last_message ? '[Kan ikke dekryptere beskeden]' : 'Ingen beskeder endnu');
 
             const left = document.createElement('div');
             left.appendChild(name);
@@ -309,7 +319,13 @@
           const res = await fetch('/messages', { credentials: 'include' });
           if (!res.ok) throw new Error('Kunne ikke hente samtaler');
           const data = await res.json();
-          state.conversations = data;
+          state.conversations = data.map((c) => ({
+            ...c,
+            conversation_id: Number(c.conversation_id),
+            host1_id: Number(c.host1_id),
+            host2_id: Number(c.host2_id),
+            last_message: c.last_message ? { ...c.last_message } : null
+          }));
           renderConversationList();
         }
 
@@ -326,11 +342,12 @@
 
           messages.forEach((msg) => {
             const row = document.createElement('div');
-            const outgoing = msg.sender_id === state.me.id;
+            const outgoing = Number(msg.sender_id) === Number(state.me.id);
             row.className = 'message-row ' + (outgoing ? 'outgoing' : 'incoming');
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble';
-            bubble.textContent = msg.plaintext || '[Kan ikke dekryptere beskeden]';
+            const text = msg.plaintext || '[Kan ikke dekryptere beskeden]';
+            bubble.textContent = text;
             const meta = document.createElement('div');
             meta.className = 'message-meta';
             meta.textContent = formatTime(msg.created_at);
