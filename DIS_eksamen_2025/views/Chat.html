@@ -5,6 +5,158 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Understory • Meddelelser</title>
     <link rel="stylesheet" href="/Chat.css" />
+    <style>
+      .new-convo-panel {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid #e3e3e3;
+        border-radius: 12px;
+        background: #f9fafb;
+      }
+      .new-convo-panel.active { display: flex; }
+      .search-results {
+        max-height: 180px;
+        overflow-y: auto;
+        border: 1px solid #ececec;
+        border-radius: 10px;
+        padding: 6px;
+        background: #fff;
+      }
+      .search-result {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 8px;
+        border-bottom: 1px solid #f1f1f1;
+      }
+      .search-result:last-child { border-bottom: none; }
+      .search-result button {
+        border: 0;
+        background: #111827;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .helper-text {
+        font-size: 12px;
+        color: #6b7280;
+      }
+      .status-line {
+        font-size: 13px;
+        color: #10b981;
+      }
+      .conversation-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 420px;
+        overflow-y: auto;
+      }
+      .conversation-card {
+        width: 100%;
+        text-align: left;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255,255,255,0.04);
+        color: var(--text-light);
+        border-radius: 12px;
+        padding: 12px 14px;
+        cursor: pointer;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px;
+      }
+      .conversation-card.active {
+        border-color: rgba(224,255,94,0.55);
+        background: rgba(224,255,94,0.1);
+      }
+      .conversation-card .name {
+        font-weight: 700;
+      }
+      .conversation-card .snippet {
+        color: rgba(255,255,255,0.8);
+        font-size: 13px;
+      }
+      .conversation-card .time {
+        font-size: 12px;
+        color: rgba(255,255,255,0.6);
+        align-self: center;
+      }
+      .chat-panel-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 0;
+        overflow: hidden;
+      }
+      .message-list {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-right: 6px;
+      }
+      .message-row {
+        display: flex;
+      }
+      .message-row.outgoing {
+        justify-content: flex-end;
+      }
+      .message-bubble {
+        max-width: 70%;
+        padding: 10px 14px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: #f8fff0;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      }
+      .message-row.outgoing .message-bubble {
+        background: #e0ff5e;
+        color: #0c1c10;
+        border-color: rgba(0,0,0,0.04);
+      }
+      .message-meta {
+        font-size: 12px;
+        opacity: 0.8;
+        margin-top: 4px;
+      }
+      .message-placeholder {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border: 1px dashed rgba(255,255,255,0.2);
+        border-radius: 12px;
+      }
+      .message-form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+      }
+      .message-form textarea {
+        width: 100%;
+        min-height: 60px;
+        max-height: 200px;
+        resize: vertical;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.15);
+        background: rgba(0,0,0,0.15);
+        color: #fff;
+      }
+      .message-form textarea:focus {
+        outline: 2px solid rgba(224,255,94,0.6);
+      }
+      .message-form button {
+        padding: 12px 18px;
+      }
+    </style>
   </head>
   <body>
     <div class="chat-app">
@@ -17,21 +169,26 @@
             <p class="eyebrow">Understory</p>
             <h1>Meddelelser</h1>
           </div>
-          <button class="btn btn-pill">+ Ny samtale</button>
+          <button class="btn btn-pill" id="new-convo-btn">+ Ny samtale</button>
         </header>
 
-        <label class="search-field">
-          <span class="material-icon" aria-hidden="true">🔍</span>
-          <input type="search" placeholder="Søg i beskeder" />
-        </label>
-
-        <div class="tab-row" role="tablist">
-          <button class="tab active" role="tab" aria-selected="true">Alle</button>
-          <button class="tab" role="tab" aria-selected="false">Ikke læst</button>
-          <button class="tab" role="tab" aria-selected="false">Bookinger</button>
+        <div class="new-convo-panel" id="new-convo-panel">
+          <label class="search-field">
+            <span class="material-icon" aria-hidden="true">🔍</span>
+            <input type="search" id="host-search" placeholder="Søg efter vært (navn)" />
+          </label>
+          <p class="helper-text">Start en ny samtale ved at vælge en vært fra listen.</p>
+          <div class="search-results" id="search-results" aria-live="polite"></div>
+          <div class="status-line" id="search-status"></div>
         </div>
 
-        <div class="empty-list" aria-live="polite">
+        <div class="tab-row" role="tablist" style="margin-bottom: 4px;">
+          <button class="tab active" role="tab" aria-selected="true">Alle</button>
+        </div>
+
+        <div id="conversation-list" class="conversation-list"></div>
+
+        <div class="empty-list" aria-live="polite" id="empty-conversations">
           <div class="empty-icon">
             <div class="dot dot-one"></div>
             <div class="dot dot-two"></div>
@@ -41,7 +198,6 @@
           <p>
             Når du opretter en oplevelse eller chatter med en gæst, dukker samtalen op her.
           </p>
-          <button class="btn btn-outline">Start din første samtale</button>
         </div>
       </aside>
 
@@ -49,16 +205,14 @@
         <header class="conversation-header">
           <div class="header-left">
             <p class="eyebrow">Inbox</p>
-            <h2>Vælg en samtale</h2>
+            <h2 id="conversation-title">Vælg en samtale</h2>
           </div>
           <div class="header-actions">
-            <button class="icon-btn" aria-label="Start video">📹</button>
-            <button class="icon-btn" aria-label="Start opkald">📞</button>
-            <button class="icon-btn" aria-label="Detaljer">⋯</button>
+
           </div>
         </header>
 
-        <div class="conversation-empty">
+        <div class="conversation-empty" id="empty-conversation-pane">
           <div class="bubble-stack" aria-hidden="true">
             <span></span>
             <span></span>
@@ -69,9 +223,268 @@
             Din næste samtale bliver vist i dette felt. Når du svarer på en besked, følger hele
             tråden med.
           </p>
-          <button class="btn btn-pill">Planlæg en oplevelse</button>
+        </div>
+
+        <div class="chat-panel-body" id="conversation-pane" style="display: none;">
+          <div class="message-list" id="message-list"></div>
+          <form class="message-form" id="message-form">
+            <textarea id="message-text" placeholder="Skriv en besked..."></textarea>
+            <button class="btn btn-pill" type="submit">Send</button>
+          </form>
         </div>
       </section>
     </div>
+    <script>
+      (function () {
+        const toggleBtn = document.getElementById('new-convo-btn');
+        const panel = document.getElementById('new-convo-panel');
+        const searchInput = document.getElementById('host-search');
+        const resultsEl = document.getElementById('search-results');
+        const statusEl = document.getElementById('search-status');
+        const conversationListEl = document.getElementById('conversation-list');
+        const emptyConversationsEl = document.getElementById('empty-conversations');
+        const emptyPaneEl = document.getElementById('empty-conversation-pane');
+        const conversationPaneEl = document.getElementById('conversation-pane');
+        const messageListEl = document.getElementById('message-list');
+        const messageForm = document.getElementById('message-form');
+        const messageText = document.getElementById('message-text');
+        const conversationTitle = document.getElementById('conversation-title');
+        let debounceTimer = null;
+        let state = {
+          me: null,
+          conversations: [],
+          selectedConversationId: null
+        };
+
+        async function fetchMe() {
+          const res = await fetch('/api/me', { credentials: 'include' });
+          if (!res.ok) throw new Error('Kunne ikke hente bruger');
+          state.me = await res.json();
+        }
+
+        function formatTime(dateStr) {
+          if (!dateStr) return '';
+          const d = new Date(dateStr);
+          return d.toLocaleDateString('da-DK', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function renderConversationList() {
+          conversationListEl.innerHTML = '';
+          if (!state.conversations.length) {
+            emptyConversationsEl.style.display = 'block';
+            return;
+          }
+          emptyConversationsEl.style.display = 'none';
+
+          state.conversations.forEach((conv) => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'conversation-card' + (conv.conversation_id === state.selectedConversationId ? ' active' : '');
+            item.addEventListener('click', () => openConversation(conv.conversation_id));
+
+            const other = conv.other_host || {};
+            const name = document.createElement('div');
+            name.className = 'name';
+            name.textContent = `${other.firstname || ''} ${other.lastname || ''}`.trim() || other.email || 'Ukendt';
+
+            const snippet = document.createElement('div');
+            snippet.className = 'snippet';
+            snippet.textContent = conv.last_message?.plaintext || 'Ingen beskeder endnu';
+
+            const left = document.createElement('div');
+            left.appendChild(name);
+            left.appendChild(snippet);
+
+            const time = document.createElement('div');
+            time.className = 'time';
+            time.textContent = formatTime(conv.last_message?.created_at || conv.last_message?.last_message_created_at || conv.created_at);
+
+            item.appendChild(left);
+            item.appendChild(time);
+            conversationListEl.appendChild(item);
+          });
+        }
+
+        async function loadConversations() {
+          const res = await fetch('/messages', { credentials: 'include' });
+          if (!res.ok) throw new Error('Kunne ikke hente samtaler');
+          const data = await res.json();
+          state.conversations = data;
+          renderConversationList();
+        }
+
+        function renderMessages(messages) {
+          messageListEl.innerHTML = '';
+
+          if (!messages.length) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'message-placeholder';
+            placeholder.textContent = 'Dette er begyndelsen på en legendarisk beskedhistorik';
+            messageListEl.appendChild(placeholder);
+            return;
+          }
+
+          messages.forEach((msg) => {
+            const row = document.createElement('div');
+            const outgoing = msg.sender_id === state.me.id;
+            row.className = 'message-row ' + (outgoing ? 'outgoing' : 'incoming');
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = msg.plaintext || '[Kan ikke dekryptere beskeden]';
+            const meta = document.createElement('div');
+            meta.className = 'message-meta';
+            meta.textContent = formatTime(msg.created_at);
+            bubble.appendChild(meta);
+            row.appendChild(bubble);
+            messageListEl.appendChild(row);
+          });
+
+          messageListEl.scrollTop = messageListEl.scrollHeight;
+        }
+
+        async function openConversation(conversationId) {
+          state.selectedConversationId = conversationId;
+          renderConversationList();
+          emptyPaneEl.style.display = 'none';
+          conversationPaneEl.style.display = 'flex';
+
+          const conv = state.conversations.find((c) => c.conversation_id === conversationId);
+          const other = conv?.other_host || {};
+          conversationTitle.textContent = `${other.firstname || ''} ${other.lastname || ''}`.trim() || other.email || 'Samtale';
+
+          const res = await fetch(`/messages/${conversationId}`, { credentials: 'include' });
+          if (!res.ok) {
+            messageListEl.innerHTML = '<div class="message-placeholder">Kunne ikke hente beskeder.</div>';
+            return;
+          }
+          const data = await res.json();
+          renderMessages(data.messages || []);
+        }
+
+        async function sendMessage(e) {
+          e.preventDefault();
+          if (!state.selectedConversationId) return;
+          const text = messageText.value.trim();
+          if (!text) return;
+
+          const res = await fetch('/messages/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ conversationId: state.selectedConversationId, text })
+          });
+
+          if (!res.ok) {
+            statusEl.textContent = 'Kunne ikke sende besked.';
+            return;
+          }
+
+          messageText.value = '';
+          const saved = await res.json();
+          const messagesRes = await fetch(`/messages/${state.selectedConversationId}`, { credentials: 'include' });
+          const messagesData = messagesRes.ok ? await messagesRes.json() : { messages: [] };
+          renderMessages(messagesData.messages || []);
+
+          const conv = state.conversations.find((c) => c.conversation_id === state.selectedConversationId);
+          if (conv) {
+            conv.last_message = {
+              id: saved.message_id,
+              sender_id: saved.sender_id,
+              plaintext: saved.plaintext,
+              created_at: saved.created_at
+            };
+            renderConversationList();
+          }
+        }
+
+        toggleBtn.addEventListener('click', () => {
+          panel.classList.toggle('active');
+          if (panel.classList.contains('active')) {
+            searchInput.focus();
+          }
+        });
+
+        function renderResults(list) {
+          resultsEl.innerHTML = '';
+
+          if (!list.length) {
+            resultsEl.innerHTML = '<p class="helper-text" style="padding:6px 8px;">Ingen resultater</p>';
+            return;
+          }
+
+          list.forEach((host) => {
+            const row = document.createElement('div');
+            row.className = 'search-result';
+            const name = document.createElement('div');
+            name.innerHTML = `<strong>${host.firstname} ${host.lastname}</strong><br/><span class="helper-text">${host.email}</span>`;
+            const btn = document.createElement('button');
+            btn.textContent = 'Start';
+            btn.addEventListener('click', () => startConversation(host.id));
+            row.appendChild(name);
+            row.appendChild(btn);
+            resultsEl.appendChild(row);
+          });
+        }
+
+        async function searchHosts(term) {
+          statusEl.textContent = '';
+          try {
+            const res = await fetch(`/messages/search?term=${encodeURIComponent(term)}`, { credentials: 'include' });
+            if (!res.ok) {
+              throw new Error('Fejl ved søgning');
+            }
+            const data = await res.json();
+            renderResults(data);
+          } catch (err) {
+            statusEl.textContent = 'Kunne ikke søge efter brugere.';
+          }
+        }
+
+        async function startConversation(hostId) {
+          statusEl.textContent = '';
+          try {
+            const res = await fetch(`/messages/start/${hostId}`, { credentials: 'include' });
+            if (!res.ok) {
+              throw new Error('Fejl ved oprettelse af samtale');
+            }
+            const data = await res.json();
+            const conversationId = data.conversation_id || data.id;
+            await loadConversations();
+            if (conversationId) {
+              await openConversation(conversationId);
+            }
+            panel.classList.remove('active');
+            statusEl.textContent = 'Samtale klar.';
+          } catch (err) {
+            statusEl.textContent = 'Kunne ikke starte samtale.';
+          }
+        }
+
+        searchInput.addEventListener('input', (e) => {
+          const term = e.target.value.trim();
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            if (!term) {
+              resultsEl.innerHTML = '';
+              return;
+            }
+            searchHosts(term);
+          }, 250);
+        });
+
+        messageForm.addEventListener('submit', sendMessage);
+
+        async function init() {
+          try {
+            await fetchMe();
+            await loadConversations();
+          } catch (err) {
+            statusEl.textContent = 'Kunne ikke hente data.';
+          }
+        }
+
+        init();
+      })();
+    </script>
   </body>
 </html>

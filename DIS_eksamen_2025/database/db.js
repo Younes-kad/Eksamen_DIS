@@ -138,6 +138,153 @@ module.exports = class Db {
       return res.recordset[0] || null;
     }
 
+    async findHostById(id) {
+      await this.connect();
+
+      const res = await this.db.request()
+        .input('id', sql.Int, id)
+        .query(`
+          SELECT *
+          FROM hosts
+          WHERE id = @id;
+        `);
+
+      return res.recordset[0] || null;
+    }
+
+    async searchHostsByName(searchTerm) {
+      await this.connect();
+      const term = `%${searchTerm || ''}%`;
+
+      const res = await this.db.request()
+        .input('term', sql.NVarChar(200), term)
+        .query(`
+          SELECT id, firstname, lastname, email, public_key, private_key
+          FROM hosts
+          WHERE firstname LIKE @term
+             OR lastname LIKE @term;
+        `);
+
+      return res.recordset;
+    }
+
+    async findConversationBetween(hostA, hostB) {
+      await this.connect();
+
+      const res = await this.db.request()
+        .input('hostA', sql.Int, hostA)
+        .input('hostB', sql.Int, hostB)
+        .query(`
+          SELECT *
+          FROM conversations
+          WHERE (host1_id = @hostA AND host2_id = @hostB)
+             OR (host1_id = @hostB AND host2_id = @hostA);
+        `);
+
+      return res.recordset[0] || null;
+    }
+
+    async createConversation(host1Id, host2Id) {
+      await this.connect();
+
+      const res = await this.db.request()
+        .input('host1Id', sql.Int, host1Id)
+        .input('host2Id', sql.Int, host2Id)
+        .query(`
+          INSERT INTO conversations (host1_id, host2_id)
+          VALUES (@host1Id, @host2Id);
+
+          SELECT SCOPE_IDENTITY() AS conversation_id;
+        `);
+
+      return res.recordset[0]?.conversation_id || null;
+    }
+
+    async getConversationsForHost(hostId) {
+      await this.connect();
+
+      const res = await this.db.request()
+        .input('hostId', sql.Int, hostId)
+        .query(`
+          SELECT
+            c.id AS conversation_id,
+            c.host1_id,
+            c.host2_id,
+            c.created_at,
+            h1.firstname AS host1_firstname,
+            h1.lastname AS host1_lastname,
+            h1.email AS host1_email,
+            h2.firstname AS host2_firstname,
+            h2.lastname AS host2_lastname,
+            h2.email AS host2_email,
+            lastMsg.id AS last_message_id,
+            lastMsg.sender_id AS last_message_sender_id,
+            lastMsg.content AS last_message_content,
+            lastMsg.is_read AS last_message_is_read,
+            lastMsg.created_at AS last_message_created_at
+          FROM conversations c
+          JOIN hosts h1 ON h1.id = c.host1_id
+          JOIN hosts h2 ON h2.id = c.host2_id
+          OUTER APPLY (
+            SELECT TOP 1 *
+            FROM messages m
+            WHERE m.conversation_id = c.id
+            ORDER BY m.created_at DESC, m.id DESC
+          ) lastMsg
+          WHERE c.host1_id = @hostId
+             OR c.host2_id = @hostId
+          ORDER BY last_message_created_at DESC, c.created_at DESC;
+        `);
+
+      return res.recordset;
+    }
+
+    async createMessage(conversationId, senderId, encryptedContent) {
+      await this.connect();
+
+      const res = await this.db.request()
+        .input('conversationId', sql.Int, conversationId)
+        .input('senderId', sql.Int, senderId)
+        .input('content', sql.NVarChar(sql.MAX), encryptedContent)
+        .query(`
+          INSERT INTO messages (conversation_id, sender_id, content)
+          VALUES (@conversationId, @senderId, @content);
+
+          SELECT TOP 1
+            id AS message_id,
+            conversation_id,
+            sender_id,
+            content,
+            is_read,
+            created_at
+          FROM messages
+          WHERE id = SCOPE_IDENTITY();
+        `);
+
+      return res.recordset[0] || null;
+    }
+
+    async getMessages(conversationId) {
+      await this.connect();
+
+      const res = await this.db.request()
+        .input('conversationId', sql.Int, conversationId)
+        .query(`
+          SELECT
+            id AS message_id,
+            conversation_id,
+            sender_id,
+            content,
+            is_read,
+            created_at
+          FROM messages
+          WHERE conversation_id = @conversationId
+          ORDER BY created_at ASC, message_id ASC;
+        `);
+
+      return res.recordset;
+    }
+
 }
 
 

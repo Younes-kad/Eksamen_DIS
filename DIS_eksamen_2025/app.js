@@ -18,6 +18,7 @@ var loginRouter = require('./routes/login');
 var signupRouter = require('./routes/signup');
 var profileRouter = require('./routes/profile');
 var dashboardRouter = require('./routes/dashboard');
+var messagesRouter = require('./routes/messages');
 
 
 // Twillo opsætning 2fa
@@ -78,6 +79,7 @@ app.use('/', indexRouter);
 app.use('/', loginRouter);
 app.use('/', signupRouter);
 app.use('/', profileRouter);
+app.use('/', messagesRouter);
 
 
 // 404 handler
