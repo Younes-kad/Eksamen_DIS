@@ -47,7 +47,61 @@ router.post('/signup', async (req, res) => {
     });
 
     console.log("Ny host oprettet:", newHostId);
-    res.redirect('/login-2fa?signup=1');
+
+    // Generate 2FA code and store pending session for verification
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+
+    req.session.pending2FA = {
+      code,
+      expiresAt,
+      host: {
+        id: newHostId,
+        firstname,
+        lastname,
+        email,
+        phone
+      }
+    };
+
+    // Try to send via Twilio configured on app
+    try {
+      const twilioClient = req.app.get('twilioClient');
+      const twilioNumber = req.app.get('twilioNumber');
+
+      if (!twilioClient || !twilioNumber) {
+        console.error('Twilio not configured; cannot send signup SMS');
+        if (process.env.DEV_SHOW_CODE === 'true') {
+          return res.redirect(`/login-2fa?signup=1&debug_code=${encodeURIComponent(code)}`);
+        }
+        return res.redirect('/login-2fa?signup=1');
+      }
+
+      if (!phone) {
+        console.error('No phone provided for new host', newHostId);
+        if (process.env.DEV_SHOW_CODE === 'true') {
+          return res.redirect(`/login-2fa?signup=1&debug_code=${encodeURIComponent(code)}`);
+        }
+        return res.redirect('/login-2fa?signup=1');
+      }
+
+      console.log('Sending signup 2FA to', phone);
+      const result = await twilioClient.messages.create({
+        from: twilioNumber,
+        to: phone,
+        body: `Din registreringskode er: ${code} (gyldig i 5 min)`
+      });
+
+      console.log('Signup SMS sent, sid=', result && result.sid);
+      return res.redirect('/login-2fa?signup=1');
+    } catch (err) {
+      console.error('Error sending signup SMS:', err && err.message ? err.message : err);
+      if (process.env.DEV_SHOW_CODE === 'true') {
+        return res.redirect(`/login-2fa?signup=1&debug_code=${encodeURIComponent(code)}`);
+      }
+      // fallback: still redirect to the 2FA page so the user continues the flow
+      return res.redirect('/login-2fa?signup=1');
+    }
 
   } catch (err) {
     console.error("Signup error:", err);
