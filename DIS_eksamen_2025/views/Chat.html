@@ -49,6 +49,35 @@
         font-size: 13px;
         color: #10b981;
       }
+      .chat-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .chat-nav .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        color: var(--text-light);
+        text-decoration: none;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        font-weight: 600;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }
+      .chat-nav .nav-link .icon {
+        font-size: 1.05rem;
+      }
+      .chat-nav .nav-link:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .chat-nav .nav-link.active {
+        background: rgba(224, 255, 94, 0.16);
+        border-color: rgba(224, 255, 94, 0.5);
+        color: #0f1a10;
+      }
       .conversation-list {
         display: flex;
         flex-direction: column;
@@ -171,6 +200,32 @@
         <a class="back-link" href="/dashboard" onclick="if (window.history.length > 1) { history.back(); return false; }">
           ← Tilbage
         </a>
+        <nav class="chat-nav" aria-label="Primær navigation">
+          <a class="nav-link" href="/dashboard">
+            <span class="icon">🏠</span>
+            <span>Hjem</span>
+          </a>
+          <a class="nav-link" href="/kalender">
+            <span class="icon">📅</span>
+            <span>Kalender</span>
+          </a>
+          <a class="nav-link active" href="/chat" aria-current="page">
+            <span class="icon">💬</span>
+            <span>Connect</span>
+          </a>
+          <a class="nav-link" href="/salg">
+            <span class="icon">💳</span>
+            <span>Salg</span>
+          </a>
+          <a class="nav-link" href="/storefront">
+            <span class="icon">🛍️</span>
+            <span>Storefront</span>
+          </a>
+          <a class="nav-link" href="/profile">
+            <span class="icon">👤</span>
+            <span>Profil</span>
+          </a>
+        </nav>
         <header class="sidebar-header">
           <div>
             <p class="eyebrow">Understory</p>

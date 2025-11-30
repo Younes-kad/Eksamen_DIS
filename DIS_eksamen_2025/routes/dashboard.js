@@ -13,8 +13,8 @@ router.get('/kalender', requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'Dashboard', 'nav', 'kalender.html'));
 });
 
-// GET /chat (public)
-router.get('/chat', (req, res) => {
+// GET /chat (protected)
+router.get('/chat', requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'Chat.html'));
 });
 
