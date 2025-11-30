@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/dashboard.css" />
 </head>
 <body>
+  <button class="menu-toggle" data-menu-toggle aria-label="Åbn menu">☰ Menu</button>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">U</div>
@@ -40,6 +41,7 @@
         </a>
       </div>
     </aside>
+    <div class="menu-overlay" data-menu-overlay></div>
 
     <main class="content">
       <section class="profile">
@@ -86,6 +88,7 @@
       </section>
     </main>
   </div>
+  <script src="/JS/menu.js"></script>
   <script>
     (async function loadHost() {
       try {

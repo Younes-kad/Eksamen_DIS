@@ -65,6 +65,9 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    animation: fadeUp 340ms ease-out 120ms both;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    will-change: transform;
 }
 
 .empty-state {
@@ -131,6 +134,12 @@
 .btn-outline:hover {
     background: var(--bg);
     border-color: var(--muted);
+}
+
+.sales-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    border-color: transparent;
 }
 
 /* --- Promo Banner (Bunden) --- */

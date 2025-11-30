@@ -45,6 +45,7 @@
   /* Responsivt grid: Plads til mindst 340px brede kort */
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 24px;
+  animation: fadeUp 340ms ease-out 120ms both;
 }
 
 /* --- Card Styling --- */
@@ -53,12 +54,14 @@
   border: 1px solid #f0f0f0; /* Meget diskret kant */
   border-radius: 16px;
   overflow: hidden;
-  transition: box-shadow 0.2s ease;
+  transition: transform 180ms ease, box-shadow 200ms ease, border-color 180ms ease;
+  will-change: transform;
   /* Ingen skygge som standard på billedet, men en hover-effekt er lækker */
 }
 
 .storefront-card:hover {
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transform: translateY(-5px);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.08);
   border-color: transparent;
 }
 
