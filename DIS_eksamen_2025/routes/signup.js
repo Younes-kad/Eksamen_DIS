@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
+const { generateKeyPairSync } = require('crypto');
 
 router.get('/signup', (req, res) => { 
   res.sendFile(path.join(__dirname, '../views/signup.html'));
@@ -31,6 +32,9 @@ router.post('/signup', async (req, res) => {
     }
 
     const password_hash = await bcrypt.hash(password, 10);
+    const { publicKey, privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const public_key = publicKey.export({ type: 'pkcs1', format: 'pem' });
+    const private_key = privateKey.export({ type: 'pkcs1', format: 'pem' });
 
     const newHostId = await db.createHost({
       firstname,
@@ -43,7 +47,9 @@ router.post('/signup', async (req, res) => {
       bio,
       is_company,
       cvr,
-      open_for_collab
+      open_for_collab,
+      public_key,
+      private_key
     });
 
     console.log("Ny host oprettet:", newHostId);

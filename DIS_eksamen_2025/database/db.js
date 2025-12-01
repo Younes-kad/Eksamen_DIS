@@ -42,7 +42,9 @@ module.exports = class Db {
         bio,
         is_company,
         cvr,
-        open_for_collab
+      open_for_collab,
+      public_key = null,
+      private_key = null
       }) {
         await this.connect();
       
@@ -58,14 +60,18 @@ module.exports = class Db {
           .input('is_company', sql.Bit, is_company)
           .input('cvr', sql.NVarChar(20), cvr)
           .input('open_for_collab', sql.Bit, open_for_collab)
+          .input('public_key', sql.NVarChar(sql.MAX), public_key)
+          .input('private_key', sql.NVarChar(sql.MAX), private_key)
           .query(`
             INSERT INTO hosts (
               firstname, lastname, email, password_hash, phone,
-              birthdate, city, bio, is_company, cvr, open_for_collab
+              birthdate, city, bio, is_company, cvr, open_for_collab,
+              public_key, private_key
             )
             VALUES (
               @firstname, @lastname, @email, @password_hash, @phone,
-              @birthdate, @city, @bio, @is_company, @cvr, @open_for_collab
+              @birthdate, @city, @bio, @is_company, @cvr, @open_for_collab,
+              @public_key, @private_key
             );
       
             SELECT SCOPE_IDENTITY() AS host_id;
