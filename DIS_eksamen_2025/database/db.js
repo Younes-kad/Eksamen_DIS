@@ -1,5 +1,6 @@
 // Vi bruger npm pakken mssql, som kan oprette forbindelse til vores Azure SQL database
 const sql = require("mssql");
+const crypto = require("crypto");
 
 // Opretter en enkelt database klasse, hvor alle metoder vil ligge i. 
 module.exports = class Db {
@@ -10,6 +11,19 @@ module.exports = class Db {
     // metode som forbinder til databasen vha. config.js
     constructor(config) {
         this.config = config;
+    }
+
+    hashEmail(email) {
+      if (!email) return null;
+      const normalized = String(email).trim().toLowerCase();
+      const secret = process.env.EMAIL_HASH_SECRET;
+
+      if (!secret) {
+        console.warn('EMAIL_HASH_SECRET mangler; bruger normaliseret email som hash.');
+        return normalized;
+      }
+
+      return crypto.createHmac('sha256', secret).update(normalized).digest('hex');
     }
 
     // Skaber forbindelse til databasen
@@ -47,11 +61,13 @@ module.exports = class Db {
       private_key = null
       }) {
         await this.connect();
+        const email_hash = this.hashEmail(email);
       
         const res = await this.db.request()
           .input('firstname', sql.NVarChar(50), firstname)
           .input('lastname', sql.NVarChar(50), lastname)
           .input('email', sql.NVarChar(100), email)
+          .input('email_hash', sql.NVarChar(128), email_hash)
           .input('password_hash', sql.NVarChar(255), password_hash)
           .input('phone', sql.NVarChar(20), phone)
           .input('birthdate', sql.Date, birthdate)
@@ -64,12 +80,12 @@ module.exports = class Db {
           .input('private_key', sql.NVarChar(sql.MAX), private_key)
           .query(`
             INSERT INTO hosts (
-              firstname, lastname, email, password_hash, phone,
+              firstname, lastname, email, email_hash, password_hash, phone,
               birthdate, city, bio, is_company, cvr, open_for_collab,
               public_key, private_key
             )
             VALUES (
-              @firstname, @lastname, @email, @password_hash, @phone,
+              @firstname, @lastname, @email, @email_hash, @password_hash, @phone,
               @birthdate, @city, @bio, @is_company, @cvr, @open_for_collab,
               @public_key, @private_key
             );
@@ -82,13 +98,16 @@ module.exports = class Db {
 
     async findHostByEmail(email) {
       await this.connect();
+      const email_hash = this.hashEmail(email);
       
       const res = await this.db.request()
         .input('email', sql.NVarChar(100), email)
+        .input('email_hash', sql.NVarChar(128), email_hash)
         .query(`
           SELECT *
           FROM hosts
-          WHERE email = @email;
+          WHERE email_hash = @email_hash
+             OR email = @email;
         `);
       
       return res.recordset[0] || null;
@@ -116,12 +135,14 @@ module.exports = class Db {
       bio
     }) {
       await this.connect();
+      const email_hash = this.hashEmail(email);
 
       const res = await this.db.request()
         .input('id', sql.Int, id)
         .input('firstname', sql.NVarChar(50), firstname)
         .input('lastname', sql.NVarChar(50), lastname)
         .input('email', sql.NVarChar(100), email)
+        .input('email_hash', sql.NVarChar(128), email_hash)
         .input('phone', sql.NVarChar(20), phone)
         .input('city', sql.NVarChar(100), city)
         .input('bio', sql.NVarChar(sql.MAX), bio)
@@ -131,6 +152,7 @@ module.exports = class Db {
             firstname = @firstname,
             lastname = @lastname,
             email = @email,
+            email_hash = @email_hash,
             phone = @phone,
             city = @city,
             bio = @bio
