@@ -166,6 +166,26 @@ module.exports = class Db {
       return res.recordset[0] || null;
     }
 
+    async updatePasswordByEmail(email, password_hash) {
+      await this.connect();
+      const email_hash = this.hashEmail(email);
+
+      const res = await this.db.request()
+        .input('email', sql.NVarChar(100), email)
+        .input('email_hash', sql.NVarChar(128), email_hash)
+        .input('password_hash', sql.NVarChar(255), password_hash)
+        .query(`
+          UPDATE hosts
+          SET password_hash = @password_hash
+          WHERE email_hash = @email_hash
+             OR email = @email;
+
+          SELECT @@ROWCOUNT AS affected;
+        `);
+
+      return res.recordset[0]?.affected || 0;
+    }
+
     async findHostById(id) {
       await this.connect();
 

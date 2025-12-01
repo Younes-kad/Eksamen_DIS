@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const bcrypt = require('bcrypt');
+const passwordPolicy = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 function generateCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -9,6 +10,10 @@ function generateCode() {
 
 router.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../views/login.html'));
+});
+
+router.get('/forgot-password', (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/forgot-password.html'));
 });
 
 router.post('/login', async (req, res) => {
@@ -119,6 +124,42 @@ router.post('/login-2fa', async (req, res) => {
   } catch (err) {
     console.error("2FA confirm error:", err);
     res.status(500).send('Kunne ikke bekræfte 2FA. Prøv igen.');
+  }
+});
+
+router.post('/forgot-password', async (req, res) => {
+  const db = req.app.get('db');
+  const { email, newPassword, confirmPassword } = req.body;
+
+  if (!email || !newPassword || !confirmPassword) {
+    return res.status(400).send('Email og begge kodeord er påkrævet.');
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).send('Adgangskoderne stemmer ikke overens.');
+  }
+
+  if (!passwordPolicy.test(newPassword)) {
+    return res.status(400).send('Koden skal være mindst 8 tegn, med 1 stort bogstav og 1 tal.');
+  }
+
+  try {
+    const host = await db.findHostByEmail(email);
+    if (!host) {
+      return res.status(404).send('Ingen bruger med den email.');
+    }
+
+    const password_hash = await bcrypt.hash(newPassword, 10);
+    const affected = await db.updatePasswordByEmail(email, password_hash);
+
+    if (!affected) {
+      return res.status(500).send('Kunne ikke opdatere adgangskode.');
+    }
+
+    return res.redirect('/login');
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).send('Der skete en fejl. Prøv igen.');
   }
 });
 
