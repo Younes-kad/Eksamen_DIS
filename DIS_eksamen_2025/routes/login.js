@@ -16,6 +16,22 @@ router.get('/forgot-password', (req, res) => {
   res.sendFile(path.join(__dirname, '../views/forgot-password.html'));
 });
 
+router.get('/forgot-password/code', (req, res) => {
+  // Kræv at der er en pending reset i session, ellers tilbage til start
+  if (!req.session.pendingReset) {
+    return res.redirect('/forgot-password');
+  }
+  res.sendFile(path.join(__dirname, '../views/forgot-password-code.html'));
+});
+
+router.get('/forgot-password/reset', (req, res) => {
+  // Kun adgang hvis koden er verificeret
+  if (!req.session.pendingResetVerified) {
+    return res.redirect('/forgot-password');
+  }
+  res.sendFile(path.join(__dirname, '../views/forgot-password-reset.html'));
+});
+
 router.post('/login', async (req, res) => {
   const db = req.app.get('db');
 
@@ -127,12 +143,84 @@ router.post('/login-2fa', async (req, res) => {
   }
 });
 
+// Step 1: brugeren sender email, vi sender en SMS-kode til det registrerede nummer
 router.post('/forgot-password', async (req, res) => {
   const db = req.app.get('db');
-  const { email, newPassword, confirmPassword } = req.body;
+  const { email } = req.body;
 
-  if (!email || !newPassword || !confirmPassword) {
-    return res.status(400).send('Email og begge kodeord er påkrævet.');
+  if (!email) {
+    return res.status(400).send('Email er påkrævet.');
+  }
+
+  try {
+    const host = await db.findHostByEmail(email);
+    if (!host || !host.phone) {
+      return res.status(404).send('Ingen bruger eller intet telefonnummer fundet til den email.');
+    }
+
+    const twilioClient = req.app.get('twilioClient');
+    const twilioNumber = req.app.get('twilioNumber');
+    if (!twilioClient || !twilioNumber) {
+      return res.status(500).send('SMS-opsætning mangler.');
+    }
+
+    const code = generateCode();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 min gyldig
+
+    req.session.pendingReset = {
+      email: host.email,
+      phone: host.phone,
+      code,
+      expiresAt
+    };
+
+    await twilioClient.messages.create({
+      from: twilioNumber,
+      to: host.phone,
+      body: `Din kode til nulstilling er: ${code} (gyldig i 5 min)`
+    });
+
+    return res.redirect('/forgot-password/code');
+  } catch (err) {
+    console.error('Forgot password start error:', err);
+    return res.status(500).send('Der skete en fejl. Prøv igen.');
+  }
+});
+
+// Step 2: verificer SMS-kode
+router.post('/forgot-password/code', async (req, res) => {
+  const { code } = req.body;
+  const pending = req.session.pendingReset;
+
+  if (!pending) {
+    return res.status(400).send('Ingen aktiv nulstilling. Start forfra.');
+  }
+
+  if (Date.now() > pending.expiresAt) {
+    req.session.pendingReset = null;
+    return res.status(400).send('Koden er udløbet. Start forfra.');
+  }
+
+  if (pending.code !== code) {
+    return res.status(401).send('Forkert kode.');
+  }
+
+  req.session.pendingResetVerified = true;
+  return req.session.save(() => res.redirect('/forgot-password/reset'));
+});
+
+// Step 3: modtag nyt password og opdater DB
+router.post('/forgot-password/reset', async (req, res) => {
+  const db = req.app.get('db');
+  const { newPassword, confirmPassword } = req.body;
+  const pending = req.session.pendingReset;
+
+  if (!pending || !req.session.pendingResetVerified) {
+    return res.status(400).send('Ingen aktiv nulstilling. Start forfra.');
+  }
+
+  if (!newPassword || !confirmPassword) {
+    return res.status(400).send('Begge kodeord er påkrævet.');
   }
 
   if (newPassword !== confirmPassword) {
@@ -144,13 +232,11 @@ router.post('/forgot-password', async (req, res) => {
   }
 
   try {
-    const host = await db.findHostByEmail(email);
-    if (!host) {
-      return res.status(404).send('Ingen bruger med den email.');
-    }
-
     const password_hash = await bcrypt.hash(newPassword, 10);
-    const affected = await db.updatePasswordByEmail(email, password_hash);
+    const affected = await db.updatePasswordByEmail(pending.email, password_hash);
+
+    req.session.pendingReset = null;
+    req.session.pendingResetVerified = null;
 
     if (!affected) {
       return res.status(500).send('Kunne ikke opdatere adgangskode.');
@@ -158,7 +244,7 @@ router.post('/forgot-password', async (req, res) => {
 
     return res.redirect('/login');
   } catch (err) {
-    console.error('Forgot password error:', err);
+    console.error('Forgot password reset error:', err);
     return res.status(500).send('Der skete en fejl. Prøv igen.');
   }
 });

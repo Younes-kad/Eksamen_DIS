@@ -61,7 +61,9 @@ const publicPaths = [
   '/login',
   '/login-2fa',
   '/signup',
-  '/forgot-password'
+  '/forgot-password',
+  '/forgot-password/code',
+  '/forgot-password/reset'
 ];
 
 app.use((req, res, next) => {
