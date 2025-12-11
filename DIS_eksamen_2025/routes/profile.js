@@ -12,6 +12,7 @@ router.post('/profile', requireLogin, async (req, res) => {
   const db = req.app.get('db');
 
   try {
+    // Brug session-id til at finde den aktive bruger
     const hostId = req.session.host.id;
     const {
       firstname,
@@ -26,6 +27,7 @@ router.post('/profile', requireLogin, async (req, res) => {
       return res.status(400).send("Fornavn, efternavn og email er påkrævet.");
     }
 
+    // Opdaterer hosten og får de nye felter tilbage
     const updated = await db.updateHostById(hostId, {
       firstname,
       lastname,

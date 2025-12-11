@@ -1,5 +1,6 @@
 const { generateKeyPairSync } = require("crypto");
 
+// Generer og printer et RSA nøglepar til brug i beskedkryptering
 function printKeyPair() {
   const { publicKey, privateKey } = generateKeyPairSync("rsa", {
     modulusLength: 2048,

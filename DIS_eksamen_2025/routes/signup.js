@@ -9,6 +9,7 @@ router.get('/signup', (req, res) => {
 
 const bcrypt = require('bcrypt');
 
+// POST /signup
 router.post('/signup', async (req, res) => {
   const db = req.app.get('db');
   try {
@@ -31,11 +32,13 @@ router.post('/signup', async (req, res) => {
       return res.status(400).send("Adgangskoderne stemmer ikke overens.");
     }
 
+    // Hash password og lav RSA nøglepar til krypteret beskedservice
     const password_hash = await bcrypt.hash(password, 10);
     const { publicKey, privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
     const public_key = publicKey.export({ type: 'pkcs1', format: 'pem' });
     const private_key = privateKey.export({ type: 'pkcs1', format: 'pem' });
 
+    // Opret ny host i databasen
     const newHostId = await db.createHost({
       firstname,
       lastname,

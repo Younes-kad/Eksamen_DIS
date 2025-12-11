@@ -4,6 +4,7 @@ const requireLogin = require('../middleware/requireLogin');
 
 const router = express.Router();
 
+// funktion til at lave public/private key 
 function normalizePem(key, { type }) {
   if (!key) return null;
   let cleaned = key.trim();
@@ -21,10 +22,12 @@ function normalizePem(key, { type }) {
   return `-----BEGIN RSA PRIVATE KEY-----\n${cleaned}\n-----END RSA PRIVATE KEY-----`;
 }
 
+// Dekrypterer indhold med privat key
 function decryptWithPrivateKey(privateKey, encryptedContent) {
   if (!privateKey || !encryptedContent) return null;
 
   try {
+    // Sørger for at nøglen har de rigtige header/footer linjer
     const normalized = normalizePem(privateKey, { type: 'private' });
     const keyObj = crypto.createPrivateKey(normalized);
     const decrypted = crypto.privateDecrypt(
@@ -41,6 +44,7 @@ function decryptWithPrivateKey(privateKey, encryptedContent) {
   }
 }
 
+// Krypterer tekst med public key
 function encryptWithPublicKey(publicKey, text) {
   const normalized = normalizePem(publicKey, { type: 'public' });
   try {
@@ -67,6 +71,7 @@ function encryptWithPublicKey(publicKey, text) {
   }
 }
 
+// Parser indhold som kan indeholde to krypterede versioner
 function parseDualCipher(content) {
   if (!content) return null;
   try {
@@ -78,7 +83,9 @@ function parseDualCipher(content) {
   return null;
 }
 
+// Dekrypterer beskedindhold for en given vært
 function decryptForHost({ content, hostPrivateKey, isSender }) {
+  // Hver besked gemmer krypteret version til både afsender og modtager
   const dual = parseDualCipher(content);
   const targetCipher = dual
     ? (isSender ? (dual.from || dual.to) : (dual.to || dual.from))
@@ -87,11 +94,14 @@ function decryptForHost({ content, hostPrivateKey, isSender }) {
   return decryptWithPrivateKey(hostPrivateKey, targetCipher);
 }
 
+// GET /messages
 router.get('/messages', requireLogin, async (req, res) => {
   const db = req.app.get('db');
   const hostId = req.session.host.id;
 
+  // Hent alle samtaler for den loggede vært
   try {
+    // Hent bruger og samtaler parallelt for lidt hurtigere svartid
     const [host, conversations] = await Promise.all([
       db.findHostById(hostId),
       db.getConversationsForHost(hostId)
@@ -100,13 +110,14 @@ router.get('/messages', requireLogin, async (req, res) => {
     if (!host) {
       return res.status(404).send('Bruger ikke fundet.');
     }
-
-    const conversationsWithPreview = conversations.map((conv) => {
+      // Byg samtalerespons med dekrypteret visning af seneste besked
+      const conversationsWithPreview = conversations.map((conv) => {
       const otherHostId = conv.host1_id === hostId ? conv.host2_id : conv.host1_id;
       const otherFirst = otherHostId === conv.host1_id ? conv.host1_firstname : conv.host2_firstname;
       const otherLast = otherHostId === conv.host1_id ? conv.host1_lastname : conv.host2_lastname;
       const otherEmail = otherHostId === conv.host1_id ? conv.host1_email : conv.host2_email;
 
+      // Prøv at dekryptere preview af sidste besked til den loggede bruger
       const lastMessagePlaintext = conv.last_message_id
         ? decryptForHost({
             content: conv.last_message_content,
@@ -146,6 +157,7 @@ router.get('/messages', requireLogin, async (req, res) => {
   }
 });
 
+// GET /messages/search?term=, som søger værter efter navn
 router.get('/messages/search', requireLogin, async (req, res) => {
   const db = req.app.get('db');
   const hostId = req.session.host.id;
@@ -169,6 +181,7 @@ router.get('/messages/search', requireLogin, async (req, res) => {
   }
 });
 
+// POST /messages/start/:hostId, som starter en samtale mellem to værter
 router.get('/messages/start/:hostId', requireLogin, async (req, res) => {
   const db = req.app.get('db');
   const hostId = req.session.host.id;
@@ -192,6 +205,7 @@ router.get('/messages/start/:hostId', requireLogin, async (req, res) => {
     let conversation = await db.findConversationBetween(hostId, otherHostId);
 
     if (!conversation) {
+      // Ingen samtale endnu? Opret én og hent den igen
       await db.createConversation(hostId, otherHostId);
       conversation = await db.findConversationBetween(hostId, otherHostId);
     }
@@ -208,6 +222,7 @@ router.get('/messages/start/:hostId', requireLogin, async (req, res) => {
   }
 });
 
+// GET /messages/:conversationId, som henter beskeder i en samtale
 router.get('/messages/:conversationId', requireLogin, async (req, res) => {
   const db = req.app.get('db');
   const hostId = req.session.host.id;
@@ -233,6 +248,7 @@ router.get('/messages/:conversationId', requireLogin, async (req, res) => {
 
     const messages = await db.getMessages(conversationId);
 
+    // Dekrypter hver besked for den aktuelle bruger (kan returnere null hvis nøgler er defekte)
     const decryptedMessages = messages.map((msg) => {
       const plaintext = decryptForHost({
         content: msg.content,
@@ -256,6 +272,7 @@ router.get('/messages/:conversationId', requireLogin, async (req, res) => {
   }
 });
 
+// POST /messages/send, som sender en besked i en samtale
 router.post('/messages/send', requireLogin, async (req, res) => {
   const db = req.app.get('db');
   const senderId = req.session.host.id;
@@ -288,6 +305,7 @@ router.post('/messages/send', requireLogin, async (req, res) => {
     let encryptedForRecipient;
     let encryptedForSender;
     try {
+      // Krypter to kopier: én til modtager og én til afsender
       encryptedForRecipient = encryptWithPublicKey(recipient.public_key, text);
       encryptedForSender = encryptWithPublicKey(sender.public_key, text);
     } catch (err) {
@@ -295,8 +313,10 @@ router.post('/messages/send', requireLogin, async (req, res) => {
       return res.status(400).send('Ugyldig offentlig nøgle hos afsender eller modtager.');
     }
 
+    // Pak krypterede versioner i et JSON-objekt
     const storedContent = JSON.stringify({ to: encryptedForRecipient, from: encryptedForSender });
 
+    // Gem beskeden og send plaintext tilbage, så UI kan vise den med det samme
     const saved = await db.createMessage(conversationId, senderId, storedContent);
 
     res.json({

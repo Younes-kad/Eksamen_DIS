@@ -40,7 +40,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
 // middleware session bruges til at gmme 2fa og login state
 app.use(
   session({
@@ -66,6 +65,11 @@ const publicPaths = [
 ];
 
 app.use((req, res, next) => {
+  // Hjælp til fejlfinding af login-loop
+  if (process.env.DEBUG_AUTH === 'true') {
+    console.log('[AUTH] path:', req.path, 'sid:', req.sessionID, 'host:', req.session && req.session.host);
+  }
+
   if (publicPaths.includes(req.path)) {
     return next(); // Offentlige sider, gives adgang uden login
   }
