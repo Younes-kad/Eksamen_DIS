@@ -1,0 +1,38 @@
+README
+Krav for at projektet virker
+
+For at projektet kan fungere korrekt, skal der indsættes nogle Twilio-værdier i en .env fill:
+
+TWILIO_ACCOUNT_SID =
+
+TWILIO_AUTH_TOKEN =
+
+TWILIO_PHONE_NUMBER =
+
+Uden disse værdier vil Twilio-funktionaliteten ikke virke.
+
+Som nævnt i projektet er det planen, at disse værdier også kan gemmes på andre måder. Men dette er vi ikke helt kommet i mål med endnu.
+
+
+
+Testkonti
+
+Der er oprettet to testkonti, som kan bruges til at afprøve systemet:
+
+1. test_Konto : 
+Mail: understory@gmail.com 
+Kode: Kode1010
+
+2.test_konto:
+Mail: understorytest@gmail.com 
+kode: Kode1010
+
+Kørsel af projektet
+
+Projektet kan startes på to måder:
+
+nodemon app.js
+
+node app.js
+
+Når projektet kører, kan det åbnes enten via terminalen eller direkte i browseren på: http://localhost:3001/
